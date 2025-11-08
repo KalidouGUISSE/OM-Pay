@@ -2,44 +2,35 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Str;
+
+use App\Models\Compte;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    public $incrementing = false; // pas d’auto-incrément
+    protected $keyType = 'string'; // UUID est une string
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected static function boot()
+    {
+        parent::boot();
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = Str::uuid()->toString();
+            }
+        });
+    }
+
+    protected $fillable = ['id', 'nom', 'prenom', 'role'];
+
+    public function comptes()
+{
+    return $this->hasMany(Compte::class, 'id_client', 'id');
+}
+
 }
