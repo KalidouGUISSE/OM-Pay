@@ -3,27 +3,36 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
+use App\Models\Compte;
 use Illuminate\Support\Facades\Hash;
-
+use App\Traits\ResponseTraits;
 
 class AuthController extends Controller
 {
+    use ResponseTraits;
+
     public function login(Request $request)
     {
         $request->validate([
-            'numero' => 'required|string',
-            'codePing' => 'required|string',
+            'numeroTelephone' => 'required|string',
+            'codePing' => 'required|string|min:4',
         ]);
 
-        $user = User::where('numero', $request->email)->first();
+        $compte = Compte::where('numeroTelephone', $request->numeroTelephone)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Identifiants invalides'], 401);
+        if (!$compte || !Hash::check($request->codePing, $compte->codePing)) {
+            return $this->errorResponse('Numéro de téléphone ou code PIN invalide', 'auth_failed', 401);
         }
 
-        $token = $user->createToken('Personal Access Token')->accessToken;
+        if ($compte->statut !== 'actif') {
+            return $this->errorResponse('Votre compte n\'est pas actif', 'account_inactive', 403);
+        }
 
-        return response()->json(['token' => $token], 200);
+        $token = $compte->user->createToken('Personal Access Token')->plainTextToken;
+
+        return $this->successResponse('Connexion réussie', [
+            'token' => $token,
+            'compte' => $compte->load('user'),
+        ]);
     }
 }

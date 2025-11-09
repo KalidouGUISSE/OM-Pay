@@ -1,66 +1,165 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# OM Pay - API de Gestion de Comptes
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Vue d'ensemble
 
-## About Laravel
+OM Pay est une application Laravel conçue pour la gestion de comptes bancaires ou financiers, inspirée des services de paiement mobile comme Orange Money. L'application fournit une API REST pour l'authentification des utilisateurs et la gestion des comptes.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Architecture du Projet
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Le projet suit l'architecture standard de Laravel 10 avec une séparation claire des responsabilités :
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Modèles** : `User` et `Compte` avec relations Eloquent
+- **Contrôleurs** : `AuthController` pour l'authentification, `CompteController` pour la gestion des comptes
+- **Services** : `CompteService` pour la logique métier
+- **Traits** : `ResponseTraits` pour standardiser les réponses API
+- **Base de données** : MySQL avec migrations, seeders et factories
 
-## Learning Laravel
+## Fonctionnalités Principales
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 1. Authentification
+- Connexion utilisateur via API
+- Génération de tokens d'accès (OAuth2 avec Passport)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 2. Gestion des Comptes
+- Création, lecture, mise à jour et suppression de comptes
+- Filtrage par type (simple/marchand) et statut (actif/bloqué/fermé)
+- Recherche par numéro de compte ou informations client
+- Pagination des résultats
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 3. Architecture Modulaire
+- Séparation des préoccupations avec services et traits
+- Réponses API standardisées (succès/erreur)
+- Utilisation d'UUID pour les identifiants
 
-## Laravel Sponsors
+## Structure de la Base de Données
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Table `users`
+- `id` : UUID (clé primaire)
+- `nom` : Nom de l'utilisateur
+- `prenom` : Prénom de l'utilisateur
+- `role` : Rôle (client/admin)
+- `timestamps`
 
-### Premium Partners
+### Table `comptes`
+- `id` : UUID (clé primaire)
+- `id_client` : UUID (clé étrangère vers users)
+- `numeroCompte` : Numéro unique du compte
+- `type` : Type de compte (simple/marchand)
+- `dateCreation` : Date de création
+- `statut` : Statut du compte (actif/bloqué/fermé)
+- `metadata` : Données JSON supplémentaires
+- `timestamps`
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Dépendances
 
-## Contributing
+- Laravel Framework 10.10
+- Laravel Passport 12.4 (authentification API)
+- Laravel Sanctum 3.3 (authentification légère)
+- Guzzle HTTP (requêtes externes)
+- Debugbar (développement)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Installation et Configuration
 
-## Code of Conduct
+1. Cloner le repository
+2. Installer les dépendances : `composer install`
+3. Configurer l'environnement : `cp .env.example .env`
+4. Générer la clé d'application : `php artisan key:generate`
+5. Configurer la base de données dans `.env`
+6. Exécuter les migrations : `php artisan migrate`
+7. (Optionnel) Peupler la base : `php artisan db:seed`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## API Endpoints
 
-## Security Vulnerabilities
+### Authentification
+- `POST /api/login` : Connexion utilisateur
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Comptes
+- `GET /api/comptes` : Lister les comptes (avec filtres et recherche)
+- `GET /api/comptes/{id}` : Détails d'un compte
 
-## License
+## Authentification - Implémentation Réalisée
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Fonctionnement Actuel (Après Modifications)
+L'authentification se fait maintenant par **numéro de téléphone** et **code PIN** du compte :
+- **Champs d'authentification** : `numeroTelephone` et `codePing` dans la table `comptes`
+- **Validation** : Numéro de téléphone requis, code PIN minimum 4 caractères
+- **Vérification** : Recherche du compte par numéro téléphone, vérification du hash du code PIN
+- **Contrôle de statut** : Vérification que le compte est actif
+- **Token** : Génération de token Passport au nom de l'utilisateur propriétaire du compte
+
+### Structure de Base de Données Mise à Jour
+
+#### Table `comptes` (champs ajoutés)
+- `numeroTelephone` : Numéro de téléphone unique (nullable pour compatibilité)
+- `codePing` : Code PIN hashé (nullable pour compatibilité)
+- `codePing` masqué dans les réponses JSON (`$hidden`)
+
+### API Authentification
+
+#### Endpoint de connexion
+```
+POST /api/login
+Content-Type: application/json
+
+{
+    "numeroTelephone": "+221771234567",
+    "codePing": "1234"
+}
+```
+
+#### Réponse de succès
+```json
+{
+    "success": true,
+    "message": "Connexion réussie",
+    "data": {
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...",
+        "compte": {
+            "id": "uuid-compte",
+            "numeroCompte": "NCMTPABC123",
+            "numeroTelephone": "+221771234567",
+            "type": "simple",
+            "statut": "actif",
+            "user": {
+                "id": "uuid-user",
+                "nom": "Dupont",
+                "prenom": "Jean",
+                "role": "client"
+            }
+        }
+    }
+}
+```
+
+#### Réponse d'erreur
+```json
+{
+    "success": false,
+    "message": "Numéro de téléphone ou code PIN invalide",
+    "errors": "auth_failed"
+}
+```
+
+### Sécurité Implémentée
+
+1. **Hashage des codes PIN** : Utilisation de `Hash::make()` pour stocker les codes PIN
+2. **Masquage des données sensibles** : `codePing` caché dans les réponses JSON
+3. **Validation stricte** : Longueur minimale pour le code PIN
+4. **Vérification de statut** : Comptes inactifs rejetés
+5. **Gestion d'erreurs standardisée** : Utilisation du trait `ResponseTraits`
+
+### Données de Test
+
+Les factories génèrent maintenant des comptes avec :
+- Numéros de téléphone uniques générés automatiquement
+- Code PIN par défaut : `1234` (hashé)
+- Comptes actifs par défaut
+
+### Utilisation pour les Tests
+
+Pour tester l'authentification :
+1. Créer un compte avec seeder : `php artisan db:seed --class=UserSeeder`
+2. Récupérer un numéro de téléphone depuis la base
+3. Faire une requête POST vers `/api/login` avec `numeroTelephone` et `codePing: "1234"`
+
+Cette implémentation respecte les standards de sécurité Laravel et fournit une authentification robuste basée sur les comptes plutôt que les utilisateurs directement.

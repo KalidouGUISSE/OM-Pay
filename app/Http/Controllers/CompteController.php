@@ -30,11 +30,11 @@ class CompteController extends Controller
 
         $comptes = Compte::all();
 
-        $query = Compte::with(['client']);
+        // $query = Compte::with(['client']);
 
-        $query = $this->compteService->makeFilter($request, $query);
-
-        $query = $this->compteService->makeSearch($request, $query);
+        // // Pagination
+        // $perPage = $request->get('limit', 10);
+        // $comptes = $query->paginate($perPage);
         return [$comptes];
 
 

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 class CompteFactory extends Factory
@@ -22,6 +23,9 @@ class CompteFactory extends Factory
             'id' => Str::uuid()->toString(),
             'id_client' => $user->id, // toujours un UUID valide
             'numeroCompte' => strtoupper(Str::random(10)),
+            'numeroTelephone' => fake()->unique()->phoneNumber(),
+            'codePing' => Hash::make('1234'), // Code PIN par défaut pour les tests
+            'codePingPlain' => '1234', // Pour les tests, stocker le code non haché
             'type' => fake()->randomElement(['simple', 'marchand']),
             'dateCreation' => now(),
             'statut' => fake()->randomElement(['actif', 'bloque', 'ferme']),

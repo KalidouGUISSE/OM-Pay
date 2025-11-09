@@ -18,6 +18,9 @@ class Compte extends Model
     protected $fillable = [
         'id_client',
         'numeroCompte',
+        'numeroTelephone',
+        'codePing',
+        'codePingPlain',
         'type',
         'dateCreation',
         'statut',
@@ -28,6 +31,8 @@ class Compte extends Model
         'dateCreation' => 'date',
         'metadata' => 'array',
     ];
+
+    protected $hidden = ['codePing'];
 
     // Génération automatique de l'UUID
     protected static function boot()
