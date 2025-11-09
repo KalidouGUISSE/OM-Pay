@@ -28,7 +28,7 @@ class AuthController extends Controller
             return $this->errorResponse('Votre compte n\'est pas actif', 'account_inactive', 403);
         }
 
-        // Pour l'instant, utiliser Sanctum au lieu de Passport pour éviter les problèmes d'UUID
+        // Créer le token avec Sanctum
         $token = $compte->user->createToken('Personal Access Token')->plainTextToken;
 
         // Créer la réponse avec les informations demandées
@@ -36,6 +36,8 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $compte->user,
+            'compte_id' => $compte->id, // ID du compte avec lequel l'utilisateur s'est connecté
+            'compte' => $compte, // Informations complètes du compte
             'role' => $compte->user->role,
             'permissions' => $this->getPermissionsForRole($compte->user->role),
         ];
