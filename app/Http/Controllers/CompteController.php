@@ -29,12 +29,6 @@ class CompteController extends Controller
     {
 
         $comptes = Compte::all();
-
-        // $query = Compte::with(['client']);
-
-        // // Pagination
-        // $perPage = $request->get('limit', 10);
-        // $comptes = $query->paginate($perPage);
         return [$comptes];
 
 

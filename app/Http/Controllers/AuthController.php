@@ -28,11 +28,48 @@ class AuthController extends Controller
             return $this->errorResponse('Votre compte n\'est pas actif', 'account_inactive', 403);
         }
 
+        // Pour l'instant, utiliser Sanctum au lieu de Passport pour éviter les problèmes d'UUID
         $token = $compte->user->createToken('Personal Access Token')->plainTextToken;
 
-        return $this->successResponse('Connexion réussie', [
-            'token' => $token,
-            'compte' => $compte->load('user'),
-        ]);
+        // Créer la réponse avec les informations demandées
+        $tokenData = [
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $compte->user,
+            'role' => $compte->user->role,
+            'permissions' => $this->getPermissionsForRole($compte->user->role),
+        ];
+
+        return $this->successResponse('Connexion réussie', $tokenData);
+    }
+
+    /**
+     * Rafraîchir le token d'accès
+     */
+    public function refresh(Request $request)
+    {
+        // Cette fonctionnalité nécessite une implémentation plus avancée
+        // Pour l'instant, retourner une erreur
+        return $this->errorResponse('Fonctionnalité non implémentée', 'not_implemented', 501);
+    }
+
+    /**
+     * Déconnexion - invalider le token
+     */
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return $this->successResponse('Déconnexion réussie', []);
+    }
+
+    private function getPermissionsForRole($role)
+    {
+        $rolePermissions = [
+            'admin' => ['create', 'read', 'update', 'delete', 'manage_users'],
+            'client' => ['read', 'update_own'],
+        ];
+
+        return $rolePermissions[$role] ?? [];
     }
 }

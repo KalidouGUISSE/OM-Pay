@@ -22,15 +22,24 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-// Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/comptes',[CompteController::class,'index']);
-Route::get('/comptes/:id',[CompteController::class,'show']);
 
+// Routes d'authentification (non protégées)
+Route::prefix('v1/auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
+});
 
 // Routes protégées
-Route::middleware('auth:api')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
+Route::middleware(['auth:api', 'logging'])->group(function () {
+    Route::prefix('v1/auth')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+    });
+
+    Route::prefix('v1')->group(function () {
+        Route::get('/comptes', [CompteController::class, 'index'])->middleware('role:client,admin');
+        Route::get('/comptes/{id}', [CompteController::class, 'show'])->middleware('role:client,admin');
+        Route::get('/user', function (Request $request) {
+            return $request->user();
+        });
     });
 });
