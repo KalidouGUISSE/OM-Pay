@@ -23,7 +23,7 @@ class CompteFactory extends Factory
             'id' => Str::uuid()->toString(),
             'id_client' => $user->id, // toujours un UUID valide
             'numeroCompte' => strtoupper(Str::random(10)),
-            'numeroTelephone' => fake()->unique()->phoneNumber(),
+            'numeroTelephone' => '+221' . fake()->unique()->numberBetween(700000000, 799999999), // Numéro sénégalais valide
             'codePing' => Hash::make('1234'), // Code PIN par défaut pour les tests
             'codePingPlain' => '1234', // Pour les tests, stocker le code non haché
             'type' => fake()->randomElement(['simple', 'marchand']),

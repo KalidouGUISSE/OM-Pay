@@ -34,6 +34,37 @@ class Compte extends Model
 
     protected $hidden = ['codePing'];
 
+    /**
+     * Validation des règles pour le modèle Compte
+     */
+    public static function rules()
+    {
+        return [
+            'numeroTelephone' => [
+                'nullable',
+                'string',
+                'regex:/^\+221[0-9]{9}$/',
+                'unique:comptes,numeroTelephone',
+            ],
+            'codePing' => 'nullable|string|min:4',
+            'numeroCompte' => 'required|string|unique:comptes,numeroCompte',
+            'type' => 'required|in:simple,marchand',
+            'dateCreation' => 'required|date',
+            'statut' => 'required|in:actif,bloque,ferme',
+        ];
+    }
+
+    /**
+     * Messages de validation personnalisés
+     */
+    public static function messages()
+    {
+        return [
+            'numeroTelephone.regex' => 'Le numéro de téléphone doit être un numéro sénégalais valide commençant par +221 suivi de 9 chiffres.',
+            'numeroTelephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
+        ];
+    }
+
     // Génération automatique de l'UUID
     protected static function boot()
     {

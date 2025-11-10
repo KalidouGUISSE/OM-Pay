@@ -16,6 +16,9 @@ class AuthService
 
     public function authenticate(string $numeroTelephone, string $codePing)
     {
+        // Normaliser le numéro de téléphone pour ajouter +221 si nécessaire
+        $numeroTelephone = $this->normalizePhoneNumber($numeroTelephone);
+
         $compte = $this->compteRepo->findByNumeroTelephone($numeroTelephone);
 
         if (!$compte || !Hash::check($codePing, $compte->codePing)) {
@@ -43,5 +46,37 @@ class AuthService
     {
         // Implémentez la récupération des permissions selon le rôle
         return [];
+    }
+
+    /**
+     * Normalise le numéro de téléphone pour ajouter +221 si nécessaire
+     */
+    public function normalizePhoneNumber(string $numeroTelephone): string
+    {
+        // Supprimer tous les espaces et caractères non numériques sauf +
+        $numeroTelephone = preg_replace('/[^\d+]/', '', $numeroTelephone);
+
+        // Si le numéro commence par +221, il est déjà valide
+        if (str_starts_with($numeroTelephone, '+221')) {
+            return $numeroTelephone;
+        }
+
+        // Si le numéro commence par 221, ajouter +
+        if (str_starts_with($numeroTelephone, '221')) {
+            return '+' . $numeroTelephone;
+        }
+
+        // Si le numéro a 9 chiffres, ajouter +221
+        if (strlen($numeroTelephone) === 9 && is_numeric($numeroTelephone)) {
+            return '+221' . $numeroTelephone;
+        }
+
+        // Si le numéro a 12 chiffres et commence par 221, ajouter +
+        if (strlen($numeroTelephone) === 12 && str_starts_with($numeroTelephone, '221')) {
+            return '+' . $numeroTelephone;
+        }
+
+        // Retourner tel quel si aucune transformation n'est possible
+        return $numeroTelephone;
     }
 }
