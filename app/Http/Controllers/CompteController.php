@@ -7,7 +7,7 @@ use App\Traits\ResponseTraits;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\Compte;
 use App\Services\CompteService;
-
+use App\Http\Requests\CompteIndexRequest;
 
 class CompteController extends Controller
 {
@@ -22,34 +22,15 @@ class CompteController extends Controller
         $this->compteService = $compteService;
     }
 
-        /**
+    /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(CompteIndexRequest $request)
     {
-        $user = $request->user();
-
-        // Si c'est un client, retourner seulement le compte avec lequel il s'est connecté
-        if ($user->role === 'client') {
-            // Pour l'instant, récupérer le premier compte actif du client
-            // TODO: Dans une vraie implémentation, stocker l'ID du compte dans le token
-            $compte = Compte::where('id_client', $user->id)
-                           ->where('statut', 'actif')
-                           ->first();
-
-            if (!$compte) {
-                return $this->errorResponse('Aucun compte actif trouvé pour cet utilisateur', 'compte_not_found', 404);
-            }
-
-            return $this->successResponse('compte recuperer', [$compte]);
-        }
-
-        // Si c'est un admin, retourner tous les comptes
-        $comptes = Compte::all();
-        return $this->successResponse('comptes recuperer', $comptes->toArray());
+        return $this->compteService->getComptesForUser($request);
     }
 
-        /**
+    /**
      * Display the specified resource.
      */
     public function show(Request $request, string $id)

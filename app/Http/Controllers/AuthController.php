@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Services\AuthService;
+use Illuminate\Auth\AuthenticationException;
+
+
 use Illuminate\Http\Request;
 use App\Models\Compte;
 use Illuminate\Support\Facades\Hash;
@@ -10,41 +15,24 @@ use App\Traits\ResponseTraits;
 class AuthController extends Controller
 {
     use ResponseTraits;
+    protected $authService;
 
-    public function login(Request $request)
+    public function __construct(AuthService $authService)
     {
-        $request->validate([
-            'numeroTelephone' => 'required|string',
-            'codePing' => 'required|string|min:4',
-        ]);
-
-        $compte = Compte::where('numeroTelephone', $request->numeroTelephone)->first();
-
-        if (!$compte || !Hash::check($request->codePing, $compte->codePing)) {
-            return $this->errorResponse('Numéro de téléphone ou code PIN invalide', 'auth_failed', 401);
-        }
-
-        if ($compte->statut !== 'actif') {
-            return $this->errorResponse('Votre compte n\'est pas actif', 'account_inactive', 403);
-        }
-
-        // Créer le token avec Sanctum
-        $token = $compte->user->createToken('Personal Access Token')->plainTextToken;
-
-        // Créer la réponse avec les informations demandées
-        $tokenData = [
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $compte->user,
-            'compte_id' => $compte->id, // ID du compte avec lequel l'utilisateur s'est connecté
-            'compte' => $compte, // Informations complètes du compte
-            'role' => $compte->user->role,
-            'permissions' => $this->getPermissionsForRole($compte->user->role),
-        ];
-
-        return $this->successResponse('Connexion réussie', $tokenData);
+        $this->authService = $authService;
     }
 
+    public function login(LoginRequest $request)
+    {
+        try {
+            $tokenData = $this->authService->authenticate($request->numeroTelephone, $request->codePing);
+            return $this->successResponse('Connexion réussie', $tokenData);
+        } catch (AuthenticationException $e) {
+            return $this->errorResponse($e->getMessage(), 'auth_failed', 401);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 'account_inactive', 403);
+        }
+    }
     /**
      * Rafraîchir le token d'accès
      */

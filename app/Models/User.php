@@ -30,8 +30,8 @@ class User extends Authenticatable
     protected $fillable = ['id', 'nom', 'prenom', 'role'];
 
     public function comptes()
-{
-    return $this->hasMany(Compte::class, 'id_client', 'id');
-}
+    {
+        return $this->hasMany(Compte::class, 'id_client', 'id');
+    }
 
 }
