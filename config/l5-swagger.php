@@ -15,9 +15,24 @@ return [
                 ],
             ],
             'paths' => [
+                'docs_json' => 'api-docs.json',
+                'docs_yaml' => 'api-docs.yaml',
                 'annotations' => [
                     base_path('app/Swagger'), 
                 ],
+            ],
+            'swagger_ui' => [
+                'display' => true,
+                'validator_url' => null,
+            ],
+            'urls' => [
+                [
+                    'name' => 'OM Pay API',
+                    'url' => env('APP_URL') . '/api-docs.json', // <-- ici HTTPS
+                ],
+            ],
+            'constants' => [
+                'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://localhost:8000'),
             ],
         ],
     ],

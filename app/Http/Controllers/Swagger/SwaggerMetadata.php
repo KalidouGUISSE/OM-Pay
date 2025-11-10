@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+
 /**
  * @OA\Info(
  *     title="API OM Pay",
@@ -10,8 +11,8 @@ namespace App\Http\Controllers\Swagger;
  * )
  *
  * @OA\Server(
- *     url="http://localhost:8000",
- *     description="Serveur local"
+ *     url=L5_SWAGGER_CONST_HOST,
+ *     description="Serveur dynamique (local ou production)"
  * )
  *
  * @OA\SecurityScheme(
