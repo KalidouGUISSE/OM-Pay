@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompteController;
+use App\Http\Controllers\TransactionController;
 
 
 /*
@@ -41,5 +42,11 @@ Route::middleware(['auth:api', 'logging'])->group(function () {
         Route::get('/user', function (Request $request) {
             return $request->user();
         });
+
+        // Routes pour les transactions
+        Route::post('/transactions', [TransactionController::class, 'store'])->middleware('role:client,admin');
+        Route::get('/transactions/{id}', [TransactionController::class, 'show'])->middleware('role:client,admin');
+        Route::get('/transactions/expediteur/{expediteur}', [TransactionController::class, 'getByExpediteur'])->middleware('role:client,admin');
+        Route::get('/transactions/destinataire/{destinataire}', [TransactionController::class, 'getByDestinataire'])->middleware('role:client,admin');
     });
 });
