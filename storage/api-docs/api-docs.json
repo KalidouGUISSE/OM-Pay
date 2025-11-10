@@ -178,6 +178,92 @@
             }
         },
         "/api/v1/transactions": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Récupérer toutes les transactions de l'utilisateur",
+                "description": "Retourne toutes les transactions où l'utilisateur connecté est soit l'expéditeur soit le destinataire.",
+                "operationId": "9d6c6414f4a09547a9eaeafcfeb6de11",
+                "responses": {
+                    "200": {
+                        "description": "Transactions récupérées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transactions récupérées"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "example": "cff03e8c-4020-429d-9181-92dcf970165b"
+                                                    },
+                                                    "type de transfere": {
+                                                        "type": "string",
+                                                        "example": "Transfert d'argent"
+                                                    },
+                                                    "Numero": {
+                                                        "description": "Numéro de téléphone de l'autre partie (expéditeur si l'utilisateur est destinataire, destinataire si l'utilisateur est expéditeur)",
+                                                        "type": "string",
+                                                        "example": "+221818930119"
+                                                    },
+                                                    "montant": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 35000
+                                                    },
+                                                    "dateCreation": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-03-15T00:00:00Z"
+                                                    },
+                                                    "metadata": {
+                                                        "properties": {
+                                                            "derniereModification": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2025-11-10T15:35:46Z"
+                                                            },
+                                                            "version": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Numéro de téléphone non trouvé dans le token"
+                    },
+                    "401": {
+                        "description": "Non autorisé - token manquant ou rôle insuffisant"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "Transactions"
@@ -192,23 +278,28 @@
                             "schema": {
                                 "required": [
                                     "numero du destinataire",
-                                    "montant"
+                                    "montant",
+                                    "type_transaction"
                                 ],
                                 "properties": {
                                     "numero du destinataire": {
-                                        "description": "Numéro du destinataire (9 chiffres)",
+                                        "description": "Numéro du destinataire au format sénégalais (+221XXXXXXXXX, doit exister en base et être différent de l'expéditeur)",
                                         "type": "string",
-                                        "example": "767654567"
+                                        "example": "+221880686841"
                                     },
                                     "montant": {
-                                        "description": "Montant de la transaction",
+                                        "description": "Montant de la transaction (doit être positif et supérieur à 0.01)",
                                         "type": "number",
                                         "format": "float",
                                         "example": 35000
                                     },
                                     "type_transaction": {
-                                        "description": "Type de transaction (optionnel)",
+                                        "description": "Type de transaction (obligatoire)",
                                         "type": "string",
+                                        "enum": [
+                                            "transfert",
+                                            "Transfert d'argent"
+                                        ],
                                         "example": "Transfert d'argent"
                                     },
                                     "date": {
@@ -242,7 +333,7 @@
                                             "properties": {
                                                 "id": {
                                                     "type": "string",
-                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                    "example": "cff03e8c-4020-429d-9181-92dcf970165b"
                                                 },
                                                 "type de transaction": {
                                                     "type": "string",
@@ -250,16 +341,16 @@
                                                 },
                                                 "Destinataire": {
                                                     "type": "string",
-                                                    "example": "765463726"
+                                                    "example": "+221880686841"
                                                 },
                                                 "Expediteur": {
                                                     "type": "string",
-                                                    "example": "776458909"
+                                                    "example": "+221818930119"
                                                 },
                                                 "montant": {
                                                     "type": "number",
                                                     "format": "float",
-                                                    "example": 500
+                                                    "example": 35000
                                                 },
                                                 "Date": {
                                                     "type": "string",
@@ -268,14 +359,14 @@
                                                 },
                                                 "Reference": {
                                                     "type": "string",
-                                                    "example": "PP250723.2020.B66700"
+                                                    "example": "PP231115.2025.BA8F2"
                                                 },
                                                 "metadata": {
                                                     "properties": {
                                                         "derniereModification": {
                                                             "type": "string",
                                                             "format": "date-time",
-                                                            "example": "2023-06-10T14:30:00Z"
+                                                            "example": "2025-11-10T15:35:46Z"
                                                         },
                                                         "version": {
                                                             "type": "integer",
@@ -294,10 +385,13 @@
                         }
                     },
                     "400": {
-                        "description": "Données invalides"
+                        "description": "Données invalides - compte destinataire inexistant, expéditeur = destinataire, montant invalide, etc."
                     },
                     "401": {
-                        "description": "Non autorisé"
+                        "description": "Non autorisé - token manquant ou rôle insuffisant"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
                     }
                 },
                 "security": [
@@ -328,7 +422,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Transaction récupérée",
+                        "description": "Transaction récupérée avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -345,7 +439,7 @@
                                             "properties": {
                                                 "id": {
                                                     "type": "string",
-                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                    "example": "cff03e8c-4020-429d-9181-92dcf970165b"
                                                 },
                                                 "type de transaction": {
                                                     "type": "string",
@@ -353,16 +447,16 @@
                                                 },
                                                 "Destinataire": {
                                                     "type": "string",
-                                                    "example": "765463726"
+                                                    "example": "+221880686841"
                                                 },
                                                 "Expediteur": {
                                                     "type": "string",
-                                                    "example": "776458909"
+                                                    "example": "+221818930119"
                                                 },
                                                 "montant": {
                                                     "type": "number",
                                                     "format": "float",
-                                                    "example": 500
+                                                    "example": 35000
                                                 },
                                                 "Date": {
                                                     "type": "string",
@@ -371,14 +465,14 @@
                                                 },
                                                 "Reference": {
                                                     "type": "string",
-                                                    "example": "PP250723.2020.B66700"
+                                                    "example": "PP231115.2025.BA8F2"
                                                 },
                                                 "metadata": {
                                                     "properties": {
                                                         "derniereModification": {
                                                             "type": "string",
                                                             "format": "date-time",
-                                                            "example": "2023-06-10T14:30:00Z"
+                                                            "example": "2025-11-10T15:35:46Z"
                                                         },
                                                         "version": {
                                                             "type": "integer",
@@ -400,7 +494,7 @@
                         "description": "Transaction non trouvée"
                     },
                     "401": {
-                        "description": "Non autorisé"
+                        "description": "Non autorisé - token manquant ou rôle insuffisant"
                     }
                 },
                 "security": [
@@ -431,7 +525,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Transactions récupérées",
+                        "description": "Transactions récupérées avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -450,7 +544,7 @@
                                                 "properties": {
                                                     "id": {
                                                         "type": "string",
-                                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                        "example": "cff03e8c-4020-429d-9181-92dcf970165b"
                                                     },
                                                     "type de transaction": {
                                                         "type": "string",
@@ -458,16 +552,16 @@
                                                     },
                                                     "Destinataire": {
                                                         "type": "string",
-                                                        "example": "765463726"
+                                                        "example": "+221880686841"
                                                     },
                                                     "Expediteur": {
                                                         "type": "string",
-                                                        "example": "776458909"
+                                                        "example": "+221818930119"
                                                     },
                                                     "montant": {
                                                         "type": "number",
                                                         "format": "float",
-                                                        "example": 500
+                                                        "example": 35000
                                                     },
                                                     "Date": {
                                                         "type": "string",
@@ -476,14 +570,14 @@
                                                     },
                                                     "Reference": {
                                                         "type": "string",
-                                                        "example": "PP250723.2020.B66700"
+                                                        "example": "PP231115.2025.BA8F2"
                                                     },
                                                     "metadata": {
                                                         "properties": {
                                                             "derniereModification": {
                                                                 "type": "string",
                                                                 "format": "date-time",
-                                                                "example": "2023-06-10T14:30:00Z"
+                                                                "example": "2025-11-10T15:35:46Z"
                                                             },
                                                             "version": {
                                                                 "type": "integer",
@@ -503,10 +597,10 @@
                         }
                     },
                     "400": {
-                        "description": "Numéro invalide"
+                        "description": "Numéro invalide ou non trouvé"
                     },
                     "401": {
-                        "description": "Non autorisé"
+                        "description": "Non autorisé - token manquant ou rôle insuffisant"
                     }
                 },
                 "security": [
@@ -537,7 +631,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Transactions récupérées",
+                        "description": "Transactions récupérées avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -556,7 +650,7 @@
                                                 "properties": {
                                                     "id": {
                                                         "type": "string",
-                                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                        "example": "cff03e8c-4020-429d-9181-92dcf970165b"
                                                     },
                                                     "type de transaction": {
                                                         "type": "string",
@@ -564,16 +658,16 @@
                                                     },
                                                     "Destinataire": {
                                                         "type": "string",
-                                                        "example": "765463726"
+                                                        "example": "+221880686841"
                                                     },
                                                     "Expediteur": {
                                                         "type": "string",
-                                                        "example": "776458909"
+                                                        "example": "+221818930119"
                                                     },
                                                     "montant": {
                                                         "type": "number",
                                                         "format": "float",
-                                                        "example": 500
+                                                        "example": 35000
                                                     },
                                                     "Date": {
                                                         "type": "string",
@@ -582,14 +676,14 @@
                                                     },
                                                     "Reference": {
                                                         "type": "string",
-                                                        "example": "PP250723.2020.B66700"
+                                                        "example": "PP231115.2025.BA8F2"
                                                     },
                                                     "metadata": {
                                                         "properties": {
                                                             "derniereModification": {
                                                                 "type": "string",
                                                                 "format": "date-time",
-                                                                "example": "2023-06-10T14:30:00Z"
+                                                                "example": "2025-11-10T15:35:46Z"
                                                             },
                                                             "version": {
                                                                 "type": "integer",
@@ -609,10 +703,10 @@
                         }
                     },
                     "400": {
-                        "description": "Numéro invalide"
+                        "description": "Numéro invalide ou non trouvé"
                     },
                     "401": {
-                        "description": "Non autorisé"
+                        "description": "Non autorisé - token manquant ou rôle insuffisant"
                     }
                 },
                 "security": [

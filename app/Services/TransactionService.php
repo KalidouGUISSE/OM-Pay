@@ -124,6 +124,42 @@ class TransactionService
         return $this->successResponse('Transactions récupérées', $formattedTransactions->toArray());
     }
 
+    public function getTransactionsForUser(Request $request)
+    {
+        $user = $request->user();
+
+        // Extraire le numéro de téléphone depuis les abilities du token
+        $numeroTelephone = null;
+        $token = $user->currentAccessToken();
+        if ($token) {
+            foreach ($token->abilities ?? [] as $ability) {
+                if (str_starts_with($ability, 'numero_telephone:')) {
+                    $numeroTelephone = str_replace('numero_telephone:', '', $ability);
+                    break;
+                }
+            }
+        }
+
+        if (!$numeroTelephone) {
+            return $this->errorResponse('Numéro de téléphone non trouvé dans le token', 'numero_telephone_missing', Response::HTTP_BAD_REQUEST);
+        }
+
+        $transactions = $this->transactionRepository->getTransactionsForUser($numeroTelephone);
+
+        $formattedTransactions = $transactions->map(function ($transaction) use ($numeroTelephone) {
+            return [
+                'id' => $transaction->id,
+                'type de transfere' => $transaction->type_transaction,
+                'Numero' => $transaction->expediteur === $numeroTelephone ? $transaction->destinataire : $transaction->expediteur,
+                'montant' => $transaction->montant,
+                'dateCreation' => $transaction->date->toISOString(),
+                'metadata' => $transaction->metadata
+            ];
+        });
+
+        return $this->successResponse('Transactions récupérées', $formattedTransactions->toArray());
+    }
+
     private function genererReference(): string
     {
         do {

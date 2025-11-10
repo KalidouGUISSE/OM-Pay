@@ -60,4 +60,12 @@ class TransactionController extends Controller
 
         return $this->transactionService->getTransactionsByDestinataire($destinataire);
     }
+
+    /**
+     * Récupérer toutes les transactions de l'utilisateur connecté
+     */
+    public function index(Request $request)
+    {
+        return $this->transactionService->getTransactionsForUser($request);
+    }
 }

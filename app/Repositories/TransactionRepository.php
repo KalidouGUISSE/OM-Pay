@@ -34,4 +34,12 @@ class TransactionRepository
     {
         return Transaction::where('destinataire', $destinataire)->get();
     }
+
+    public function getTransactionsForUser(string $numeroTelephone): \Illuminate\Database\Eloquent\Collection
+    {
+        return Transaction::where('expediteur', $numeroTelephone)
+                         ->orWhere('destinataire', $numeroTelephone)
+                         ->orderBy('date', 'desc')
+                         ->get();
+    }
 }

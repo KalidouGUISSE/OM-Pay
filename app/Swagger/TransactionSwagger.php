@@ -21,8 +21,8 @@ class TransactionSwagger
      *         required=true,
      *         @OA\JsonContent(
      *             required={"numero du destinataire", "montant", "type_transaction"},
-     *             @OA\Property(property="numero du destinataire", type="string", example="767654567", description="Numéro du destinataire (9 chiffres, doit exister en base)"),
-     *             @OA\Property(property="montant", type="number", format="float", example=35000, description="Montant de la transaction (doit être positif)"),
+     *             @OA\Property(property="numero du destinataire", type="string", example="+221880686841", description="Numéro du destinataire au format sénégalais (+221XXXXXXXXX, doit exister en base et être différent de l'expéditeur)"),
+     *             @OA\Property(property="montant", type="number", format="float", example=35000, description="Montant de la transaction (doit être positif et supérieur à 0.01)"),
      *             @OA\Property(property="type_transaction", type="string", enum={"transfert", "Transfert d'argent"}, example="Transfert d'argent", description="Type de transaction (obligatoire)"),
      *             @OA\Property(property="date", type="string", format="date-time", example="2023-03-15T00:00:00Z", description="Date de la transaction (optionnel)")
      *         )
@@ -36,27 +36,66 @@ class TransactionSwagger
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
-     *                 @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                 @OA\Property(property="id", type="string", example="cff03e8c-4020-429d-9181-92dcf970165b"),
      *                 @OA\Property(property="type de transaction", type="string", example="Transfert d'argent"),
-     *                 @OA\Property(property="Destinataire", type="string", example="765463726"),
-     *                 @OA\Property(property="Expediteur", type="string", example="776458909"),
-     *                 @OA\Property(property="montant", type="number", format="float", example=500),
+     *                 @OA\Property(property="Destinataire", type="string", example="+221880686841"),
+     *                 @OA\Property(property="Expediteur", type="string", example="+221818930119"),
+     *                 @OA\Property(property="montant", type="number", format="float", example=35000),
      *                 @OA\Property(property="Date", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
-     *                 @OA\Property(property="Reference", type="string", example="PP250723.2020.B66700"),
+     *                 @OA\Property(property="Reference", type="string", example="PP231115.2025.BA8F2"),
      *                 @OA\Property(
      *                     property="metadata",
      *                     type="object",
-     *                     @OA\Property(property="derniereModification", type="string", format="date-time", example="2023-06-10T14:30:00Z"),
+     *                     @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-11-10T15:35:46Z"),
      *                     @OA\Property(property="version", type="integer", example=1)
      *                 )
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=400, description="Données invalides"),
-     *     @OA\Response(response=401, description="Non autorisé")
+     *     @OA\Response(response=400, description="Données invalides - compte destinataire inexistant, expéditeur = destinataire, montant invalide, etc."),
+     *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant"),
+     *     @OA\Response(response=422, description="Erreur de validation")
      * )
      */
     public function store() {}
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/transactions",
+     *     summary="Récupérer toutes les transactions de l'utilisateur",
+     *     description="Retourne toutes les transactions où l'utilisateur connecté est soit l'expéditeur soit le destinataire.",
+     *     tags={"Transactions"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Transactions récupérées avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Transactions récupérées"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id", type="string", example="cff03e8c-4020-429d-9181-92dcf970165b"),
+     *                     @OA\Property(property="type de transfere", type="string", example="Transfert d'argent"),
+     *                     @OA\Property(property="Numero", type="string", example="+221818930119", description="Numéro de téléphone de l'autre partie (expéditeur si l'utilisateur est destinataire, destinataire si l'utilisateur est expéditeur)"),
+     *                     @OA\Property(property="montant", type="number", format="float", example=35000),
+     *                     @OA\Property(property="dateCreation", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
+     *                     @OA\Property(
+     *                         property="metadata",
+     *                         type="object",
+     *                         @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-11-10T15:35:46Z"),
+     *                         @OA\Property(property="version", type="integer", example=1)
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Numéro de téléphone non trouvé dans le token"),
+     *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
+     * )
+     */
+    public function index() {}
 
     /**
      * @OA\Get(
@@ -74,31 +113,31 @@ class TransactionSwagger
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Transaction récupérée",
+     *         description="Transaction récupérée avec succès",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Transaction récupérée"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
-     *                 @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                 @OA\Property(property="id", type="string", example="cff03e8c-4020-429d-9181-92dcf970165b"),
      *                 @OA\Property(property="type de transaction", type="string", example="Transfert d'argent"),
-     *                 @OA\Property(property="Destinataire", type="string", example="765463726"),
-     *                 @OA\Property(property="Expediteur", type="string", example="776458909"),
-     *                 @OA\Property(property="montant", type="number", format="float", example=500),
+     *                 @OA\Property(property="Destinataire", type="string", example="+221880686841"),
+     *                 @OA\Property(property="Expediteur", type="string", example="+221818930119"),
+     *                 @OA\Property(property="montant", type="number", format="float", example=35000),
      *                 @OA\Property(property="Date", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
-     *                 @OA\Property(property="Reference", type="string", example="PP250723.2020.B66700"),
+     *                 @OA\Property(property="Reference", type="string", example="PP231115.2025.BA8F2"),
      *                 @OA\Property(
      *                     property="metadata",
      *                     type="object",
-     *                     @OA\Property(property="derniereModification", type="string", format="date-time", example="2023-06-10T14:30:00Z"),
+     *                     @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-11-10T15:35:46Z"),
      *                     @OA\Property(property="version", type="integer", example=1)
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(response=404, description="Transaction non trouvée"),
-     *     @OA\Response(response=401, description="Non autorisé")
+     *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
      * )
      */
     public function show() {}
@@ -119,7 +158,7 @@ class TransactionSwagger
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Transactions récupérées",
+     *         description="Transactions récupérées avec succès",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Transactions récupérées"),
@@ -127,25 +166,25 @@ class TransactionSwagger
      *                 property="data",
      *                 type="array",
      *                 @OA\Items(
-     *                     @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                     @OA\Property(property="id", type="string", example="cff03e8c-4020-429d-9181-92dcf970165b"),
      *                     @OA\Property(property="type de transaction", type="string", example="Transfert d'argent"),
-     *                     @OA\Property(property="Destinataire", type="string", example="765463726"),
-     *                     @OA\Property(property="Expediteur", type="string", example="776458909"),
-     *                     @OA\Property(property="montant", type="number", format="float", example=500),
+     *                     @OA\Property(property="Destinataire", type="string", example="+221880686841"),
+     *                     @OA\Property(property="Expediteur", type="string", example="+221818930119"),
+     *                     @OA\Property(property="montant", type="number", format="float", example=35000),
      *                     @OA\Property(property="Date", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
-     *                     @OA\Property(property="Reference", type="string", example="PP250723.2020.B66700"),
+     *                     @OA\Property(property="Reference", type="string", example="PP231115.2025.BA8F2"),
      *                     @OA\Property(
      *                         property="metadata",
      *                         type="object",
-     *                         @OA\Property(property="derniereModification", type="string", format="date-time", example="2023-06-10T14:30:00Z"),
+     *                         @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-11-10T15:35:46Z"),
      *                         @OA\Property(property="version", type="integer", example=1)
      *                     )
      *                 )
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=400, description="Numéro invalide"),
-     *     @OA\Response(response=401, description="Non autorisé")
+     *     @OA\Response(response=400, description="Numéro invalide ou non trouvé"),
+     *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
      * )
      */
     public function getByExpediteur() {}
@@ -166,7 +205,7 @@ class TransactionSwagger
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Transactions récupérées",
+     *         description="Transactions récupérées avec succès",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Transactions récupérées"),
@@ -174,25 +213,25 @@ class TransactionSwagger
      *                 property="data",
      *                 type="array",
      *                 @OA\Items(
-     *                     @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                     @OA\Property(property="id", type="string", example="cff03e8c-4020-429d-9181-92dcf970165b"),
      *                     @OA\Property(property="type de transaction", type="string", example="Transfert d'argent"),
-     *                     @OA\Property(property="Destinataire", type="string", example="765463726"),
-     *                     @OA\Property(property="Expediteur", type="string", example="776458909"),
-     *                     @OA\Property(property="montant", type="number", format="float", example=500),
+     *                     @OA\Property(property="Destinataire", type="string", example="+221880686841"),
+     *                     @OA\Property(property="Expediteur", type="string", example="+221818930119"),
+     *                     @OA\Property(property="montant", type="number", format="float", example=35000),
      *                     @OA\Property(property="Date", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
-     *                     @OA\Property(property="Reference", type="string", example="PP250723.2020.B66700"),
+     *                     @OA\Property(property="Reference", type="string", example="PP231115.2025.BA8F2"),
      *                     @OA\Property(
      *                         property="metadata",
      *                         type="object",
-     *                         @OA\Property(property="derniereModification", type="string", format="date-time", example="2023-06-10T14:30:00Z"),
+     *                         @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-11-10T15:35:46Z"),
      *                         @OA\Property(property="version", type="integer", example=1)
      *                     )
      *                 )
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=400, description="Numéro invalide"),
-     *     @OA\Response(response=401, description="Non autorisé")
+     *     @OA\Response(response=400, description="Numéro invalide ou non trouvé"),
+     *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
      * )
      */
     public function getByDestinataire() {}

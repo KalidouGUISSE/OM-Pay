@@ -29,13 +29,17 @@ class AuthService
             throw new \Exception('Votre compte n\'est pas actif');
         }
 
-        $token = $compte->user->createToken('Personal Access Token', ['compte_id:' . $compte->id])->plainTextToken;
+        $token = $compte->user->createToken('Personal Access Token', [
+            'compte_id:' . $compte->id,
+            'numero_telephone:' . $compte->numeroTelephone
+        ])->plainTextToken;
 
         return [
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $compte->user,
             'compte_id' => $compte->id,
+            'numero_telephone' => $compte->numeroTelephone,
             'compte' => $compte,
             'role' => $compte->user->role,
             'permissions' => $this->getPermissionsForRole($compte->user->role),
