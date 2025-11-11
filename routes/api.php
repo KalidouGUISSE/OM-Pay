@@ -26,7 +26,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Routes d'authentification (non protégées)
 Route::prefix('v1/auth')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/initiate-login', [AuthController::class, 'initiateLogin']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('/login', [AuthController::class, 'login']); // Ancienne méthode maintenue
     Route::post('/refresh', [AuthController::class, 'refresh']);
 });
 

@@ -2,8 +2,11 @@
 namespace App\Services;
 
 use App\Repositories\CompteRepository;
+use App\Models\OtpVerification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Support\Facades\Crypt;
+use Carbon\Carbon;
 
 class AuthService
 {
@@ -14,6 +17,106 @@ class AuthService
         $this->compteRepo = $compteRepo;
     }
 
+    /**
+     * Initie l'authentification en générant un OTP et un token temporaire
+     */
+    public function initiateLogin(string $numeroTelephone)
+    {
+        // Normaliser le numéro de téléphone
+        $numeroTelephone = $this->normalizePhoneNumber($numeroTelephone);
+
+        // Vérifier si le compte existe
+        $compte = $this->compteRepo->findByNumeroTelephone($numeroTelephone);
+
+        if (!$compte) {
+            throw new AuthenticationException('Numéro de téléphone non trouvé');
+        }
+
+        if ($compte->statut !== 'actif') {
+            throw new \Exception('Votre compte n\'est pas actif');
+        }
+
+        // Créer l'OTP
+        $otp = OtpVerification::createForPhone($numeroTelephone);
+
+        // Générer un token temporaire contenant le numéro de téléphone
+        $tempToken = Crypt::encryptString(json_encode([
+            'numero_telephone' => $numeroTelephone,
+            'expires_at' => Carbon::now()->addMinutes(5)->toISOString(),
+        ]));
+
+        return [
+            'temp_token' => $tempToken,
+            'otp' => $otp->otp_code, // Afficher l'OTP généré pour les tests/développement
+            'message' => 'OTP envoyé avec succès',
+            'expires_in' => 300, // 5 minutes en secondes
+        ];
+    }
+
+    /**
+     * Vérifie l'OTP et génère le token d'authentification complet
+     */
+    public function verifyOtp(string $tempToken, string $otpCode)
+    {
+        try {
+            // Décrypter le token temporaire
+            $tempData = json_decode(Crypt::decryptString($tempToken), true);
+
+            if (!$tempData || !isset($tempData['numero_telephone'])) {
+                throw new AuthenticationException('Token temporaire invalide');
+            }
+
+            // Vérifier l'expiration du token temporaire
+            if (Carbon::parse($tempData['expires_at'])->isPast()) {
+                throw new AuthenticationException('Token temporaire expiré');
+            }
+
+            $numeroTelephone = $tempData['numero_telephone'];
+
+            // Trouver l'OTP valide
+            $otp = OtpVerification::where('numero_telephone', $numeroTelephone)
+                ->where('used', false)
+                ->where('expires_at', '>', Carbon::now())
+                ->first();
+
+            if (!$otp || !$otp->isValid($otpCode)) {
+                throw new AuthenticationException('Code OTP invalide ou expiré');
+            }
+
+            // Marquer l'OTP comme utilisé
+            $otp->markAsUsed();
+
+            // Récupérer le compte et procéder à l'authentification complète
+            $compte = $this->compteRepo->findByNumeroTelephone($numeroTelephone);
+
+            if (!$compte || $compte->statut !== 'actif') {
+                throw new AuthenticationException('Compte non trouvé ou inactif');
+            }
+
+            $token = $compte->user->createToken('Personal Access Token', [
+                'compte_id:' . $compte->id,
+                'numero_telephone:' . $compte->numeroTelephone
+            ])->plainTextToken;
+
+            return [
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $compte->user,
+                'compte_id' => $compte->id,
+                'numero_telephone' => $compte->numeroTelephone,
+                'compte' => $compte,
+                'role' => $compte->user->role,
+                'permissions' => $this->getPermissionsForRole($compte->user->role),
+            ];
+
+        } catch (\Exception $e) {
+            throw new AuthenticationException('Erreur lors de la vérification OTP');
+        }
+    }
+
+    /**
+     * Ancienne méthode d'authentification (maintenue pour compatibilité)
+     */
     public function authenticate(string $numeroTelephone, string $codePing)
     {
         // Normaliser le numéro de téléphone pour ajouter +221 si nécessaire

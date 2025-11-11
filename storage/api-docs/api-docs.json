@@ -12,13 +12,258 @@
         }
     ],
     "paths": {
+        "/api/v1/auth/initiate-login": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Initier la connexion avec OTP",
+                "description": "Permet d'initier la connexion en envoyant un numéro de téléphone. Un code OTP sera généré et envoyé.",
+                "operationId": "15ecb5d89c53604a52eb97c89e426bf4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "numeroTelephone"
+                                ],
+                                "properties": {
+                                    "numeroTelephone": {
+                                        "description": "Numéro de téléphone sénégalais valide",
+                                        "type": "string",
+                                        "example": "+221818930119"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP envoyé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "OTP envoyé avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "temp_token": {
+                                                    "type": "string",
+                                                    "example": "eyJpdiI6Imtka1RhdzBtVzRObkNoYktrS3NGWWc9PSIs..."
+                                                },
+                                                "otp": {
+                                                    "description": "Code OTP généré (pour développement/tests)",
+                                                    "type": "string",
+                                                    "example": "805826"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "OTP envoyé avec succès"
+                                                },
+                                                "expires_in": {
+                                                    "description": "Durée de validité en secondes",
+                                                    "type": "integer",
+                                                    "example": 300
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Numéro de téléphone non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Numéro de téléphone non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Compte inactif",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Votre compte n'est pas actif"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/verify-otp": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Vérifier le code OTP",
+                "description": "Permet de vérifier le code OTP reçu et d'obtenir un token d'authentification complet.",
+                "operationId": "e3d832cac65082fe80b75bcefe64a3f5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token",
+                                    "otp"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "description": "Token temporaire reçu lors de l'initiation",
+                                        "type": "string",
+                                        "example": "eyJpdiI6Imtka1RhdzBtVzRObkNoYktrS3NGWWc9PSIs..."
+                                    },
+                                    "otp": {
+                                        "description": "Code OTP de 6 chiffres",
+                                        "type": "string",
+                                        "example": "805826"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentification réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Authentification réussie"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "access_token": {
+                                                    "type": "string",
+                                                    "example": "21|17vf3MfQS8c64IZvf4j5szpBMkPQF7uSLYoa70jkc33515bb"
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                },
+                                                "user": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "example": "d4f1ab82-a86e-4975-aa66-5ef804bfa246"
+                                                        },
+                                                        "nom": {
+                                                            "type": "string",
+                                                            "example": "Ondricka"
+                                                        },
+                                                        "prenom": {
+                                                            "type": "string",
+                                                            "example": "Tanya"
+                                                        },
+                                                        "role": {
+                                                            "type": "string",
+                                                            "example": "client"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "compte_id": {
+                                                    "type": "string",
+                                                    "example": "228e7d7a-937b-40dd-88d7-ff8fa4d334f4"
+                                                },
+                                                "numero_telephone": {
+                                                    "type": "string",
+                                                    "example": "+221818930119"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "client"
+                                                },
+                                                "permissions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "OTP invalide ou expiré",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Code OTP invalide ou expiré"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/login": {
             "post": {
                 "tags": [
                     "Authentification"
                 ],
-                "summary": "Connexion d’un utilisateur",
-                "description": "Permet à un utilisateur de se connecter avec son numéro de téléphone et son code PIN.",
+                "summary": "Connexion traditionnelle (numéro + PIN)",
+                "description": "Permet à un utilisateur de se connecter avec son numéro de téléphone et son code PIN. Méthode maintenue pour compatibilité.",
                 "operationId": "2ccdca282a3dfd24e3585a7fea327565",
                 "requestBody": {
                     "required": true,
@@ -31,10 +276,12 @@
                                 ],
                                 "properties": {
                                     "numeroTelephone": {
+                                        "description": "Numéro de téléphone sénégalais valide",
                                         "type": "string",
-                                        "example": "7022721314"
+                                        "example": "+221818930119"
                                     },
                                     "codePing": {
+                                        "description": "Code PIN du compte",
                                         "type": "string",
                                         "example": "1234"
                                     }
@@ -75,7 +322,7 @@
                                                 },
                                                 "compte_id": {
                                                     "type": "string",
-                                                    "example": "10e5ea70-d168-4d14-b6ef-eef90221e630"
+                                                    "example": "228e7d7a-937b-40dd-88d7-ff8fa4d334f4"
                                                 }
                                             },
                                             "type": "object"
