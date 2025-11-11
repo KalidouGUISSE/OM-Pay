@@ -160,6 +160,36 @@ class TransactionService
         return $this->successResponse('Transactions récupérées', $formattedTransactions->toArray());
     }
 
+    public function getSolde(Request $request)
+    {
+        $user = $request->user();
+
+        // Extraire le numéro de téléphone depuis les abilities du token
+        $numeroTelephone = null;
+        $token = $user->currentAccessToken();
+        if ($token) {
+            foreach ($token->abilities ?? [] as $ability) {
+                if (str_starts_with($ability, 'numero_telephone:')) {
+                    $numeroTelephone = str_replace('numero_telephone:', '', $ability);
+                    break;
+                }
+            }
+        }
+
+        if (!$numeroTelephone) {
+            return $this->errorResponse('Numéro de téléphone non trouvé dans le token', 'numero_telephone_missing', Response::HTTP_BAD_REQUEST);
+        }
+
+        $solde = $this->transactionRepository->calculateBalance($numeroTelephone);
+
+        return $this->successResponse('Solde calculé avec succès', [
+            'solde' => number_format($solde, 2, '.', ''),
+            'devise' => 'FCFA',
+            'numero_compte' => $numeroTelephone,
+            'date_calculation' => now()->toISOString()
+        ]);
+    }
+
     private function genererReference(): string
     {
         do {

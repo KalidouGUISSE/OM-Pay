@@ -68,4 +68,12 @@ class TransactionController extends Controller
     {
         return $this->transactionService->getTransactionsForUser($request);
     }
+
+    /**
+     * Récupérer le solde du compte de l'utilisateur connecté
+     */
+    public function getSolde(Request $request)
+    {
+        return $this->transactionService->getSolde($request);
+    }
 }

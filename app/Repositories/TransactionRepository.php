@@ -42,4 +42,23 @@ class TransactionRepository
                          ->orderBy('date', 'desc')
                          ->get();
     }
+
+    public function calculateBalance(string $numeroTelephone): float
+    {
+        $transactions = $this->getTransactionsForUser($numeroTelephone);
+
+        $balance = 0.0;
+
+        foreach ($transactions as $transaction) {
+            if ($transaction->destinataire === $numeroTelephone) {
+                // Si l'utilisateur est destinataire, on ajoute le montant
+                $balance += $transaction->montant;
+            } elseif ($transaction->expediteur === $numeroTelephone) {
+                // Si l'utilisateur est expéditeur, on soustrait le montant
+                $balance -= $transaction->montant;
+            }
+        }
+
+        return $balance;
+    }
 }

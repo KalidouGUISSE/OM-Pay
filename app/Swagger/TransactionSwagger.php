@@ -99,6 +99,35 @@ class TransactionSwagger
 
     /**
      * @OA\Get(
+     *     path="/api/v1/transactions/solde",
+     *     summary="Récupérer le solde du compte",
+     *     description="Calcule et retourne le solde du compte basé sur les transactions (dépôts = +montant, retraits = -montant).",
+     *     tags={"Transactions"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Solde calculé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Solde calculé avec succès"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="solde", type="string", example="27933.58", description="Solde formaté avec 2 décimales"),
+     *                 @OA\Property(property="devise", type="string", example="FCFA"),
+     *                 @OA\Property(property="numero_compte", type="string", example="+221818930119"),
+     *                 @OA\Property(property="date_calculation", type="string", format="date-time", example="2025-11-10T18:45:00Z")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Numéro de téléphone non trouvé dans le token"),
+     *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
+     * )
+     */
+    public function getSolde() {}
+
+    /**
+     * @OA\Get(
      *     path="/api/v1/transactions/{id}",
      *     summary="Récupérer une transaction par ID",
      *     description="Retourne les détails d'une transaction spécifique.",
@@ -187,7 +216,7 @@ class TransactionSwagger
      *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
      * )
      */
-    public function getByExpediteur() {}
+    // public function getByExpediteur() {}
 
     /**
      * @OA\Get(
@@ -234,5 +263,5 @@ class TransactionSwagger
      *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
      * )
      */
-    public function getByDestinataire() {}
+    // public function getByDestinataire() {}
 }
