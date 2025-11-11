@@ -62,7 +62,16 @@ class TransactionController extends Controller
     }
 
     /**
-     * Récupérer toutes les transactions de l'utilisateur connecté
+     * Récupérer toutes les transactions de l'utilisateur connecté avec filtrage et pagination
+     *
+     * Paramètres de requête supportés :
+     * - type: Filtrer par type (Dépôt, Retrait, Transfert d'argent)
+     * - date_from: Date de début (YYYY-MM-DD)
+     * - date_to: Date de fin (YYYY-MM-DD)
+     * - direction: incoming/outgoing (transactions reçues/envoyées)
+     * - per_page: Nombre d'éléments par page (1-100, défaut: 15)
+     * - sort_by: Tri par (date, amount, type, défaut: date)
+     * - sort_direction: Direction du tri (asc, desc, défaut: desc)
      */
     public function index(Request $request)
     {

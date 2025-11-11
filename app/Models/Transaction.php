@@ -60,6 +60,81 @@ class Transaction extends Model
         ];
     }
 
+    /**
+     * Scope pour filtrer par type de transaction
+     */
+    public function scopeOfType($query, $type)
+    {
+        return $query->where('type_transaction', $type);
+    }
+
+    /**
+     * Scope pour filtrer par plage de dates
+     */
+    public function scopeDateBetween($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('date', [$startDate, $endDate]);
+    }
+
+    /**
+     * Scope pour filtrer par date de début
+     */
+    public function scopeFromDate($query, $date)
+    {
+        return $query->where('date', '>=', $date);
+    }
+
+    /**
+     * Scope pour filtrer par date de fin
+     */
+    public function scopeToDate($query, $date)
+    {
+        return $query->where('date', '<=', $date);
+    }
+
+    /**
+     * Scope pour trier par date décroissante (plus récent en premier)
+     */
+    public function scopeRecentFirst($query)
+    {
+        return $query->orderBy('date', 'desc');
+    }
+
+    /**
+     * Scope pour trier par montant
+     */
+    public function scopeOrderByAmount($query, $direction = 'desc')
+    {
+        return $query->orderBy('montant', $direction);
+    }
+
+    /**
+     * Scope pour filtrer par numéro de téléphone (expéditeur ou destinataire)
+     */
+    public function scopeForUser($query, $numeroTelephone)
+    {
+        return $query->where(function ($q) use ($numeroTelephone) {
+            $q->where('expediteur', $numeroTelephone)
+              ->orWhere('destinataire', $numeroTelephone);
+        });
+    }
+
+    /**
+     * Scope pour les transactions entrantes (reçues)
+     */
+    public function scopeIncoming($query, $numeroTelephone)
+    {
+        return $query->where('destinataire', $numeroTelephone);
+    }
+
+    /**
+     * Scope pour les transactions sortantes (envoyées)
+     */
+    public function scopeOutgoing($query, $numeroTelephone)
+    {
+        return $query->where('expediteur', $numeroTelephone);
+    }
+
     // Génération automatique de l'UUID
     protected static function boot()
     {

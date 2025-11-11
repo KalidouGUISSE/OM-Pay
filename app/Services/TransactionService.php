@@ -124,6 +124,9 @@ class TransactionService
         return $this->successResponse('Transactions récupérées', $formattedTransactions->toArray());
     }
 
+    /**
+     * Récupérer toutes les transactions de l'utilisateur connecté avec filtrage et pagination
+     */
     public function getTransactionsForUser(Request $request)
     {
         $user = $request->user();
@@ -144,9 +147,47 @@ class TransactionService
             return $this->errorResponse('Numéro de téléphone non trouvé dans le token', 'numero_telephone_missing', Response::HTTP_BAD_REQUEST);
         }
 
-        $transactions = $this->transactionRepository->getTransactionsForUser($numeroTelephone);
+        // Récupérer les paramètres de filtrage
+        $filters = [
+            'type' => $request->query('type'), // Dépôt, Retrait, Transfert d'argent
+            'date_from' => $request->query('date_from'), // YYYY-MM-DD
+            'date_to' => $request->query('date_to'), // YYYY-MM-DD
+            'direction' => $request->query('direction'), // incoming, outgoing
+        ];
 
-        $formattedTransactions = $transactions->map(function ($transaction) use ($numeroTelephone) {
+        // Supprimer les valeurs nulles/vides
+        $filters = array_filter($filters, function($value) {
+            return $value !== null && $value !== '';
+        });
+
+        // Paramètres de tri et pagination
+        $perPage = $request->query('per_page', 15);
+        $sortBy = $request->query('sort_by', 'date'); // date, amount, type
+        $sortDirection = $request->query('sort_direction', 'desc'); // asc, desc
+
+        // Validation des paramètres
+        if ($perPage < 1 || $perPage > 100) {
+            $perPage = 15;
+        }
+
+        $validSortFields = ['date', 'amount', 'montant', 'type'];
+        if (!in_array($sortBy, $validSortFields)) {
+            $sortBy = 'date';
+        }
+
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'desc';
+        }
+
+        $transactions = $this->transactionRepository->getFilteredTransactionsForUser(
+            $numeroTelephone,
+            $filters,
+            $perPage,
+            $sortBy,
+            $sortDirection
+        );
+
+        $formattedTransactions = collect($transactions->items())->map(function ($transaction) use ($numeroTelephone) {
             return [
                 'id' => $transaction->id,
                 'type de transfere' => $transaction->type_transaction,
@@ -157,7 +198,22 @@ class TransactionService
             ];
         });
 
-        return $this->successResponse('Transactions récupérées', $formattedTransactions->toArray());
+        return $this->successResponse('Transactions récupérées', [
+            'transactions' => $formattedTransactions,
+            'pagination' => [
+                'current_page' => $transactions->currentPage(),
+                'last_page' => $transactions->lastPage(),
+                'per_page' => $transactions->perPage(),
+                'total' => $transactions->total(),
+                'from' => $transactions->firstItem(),
+                'to' => $transactions->lastItem(),
+            ],
+            'filters_applied' => $filters,
+            'sort' => [
+                'by' => $sortBy,
+                'direction' => $sortDirection
+            ]
+        ]);
     }
 
     public function getSolde(Request $request)

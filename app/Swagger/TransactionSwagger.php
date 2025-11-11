@@ -62,10 +62,59 @@ class TransactionSwagger
     /**
      * @OA\Get(
      *     path="/api/v1/transactions",
-     *     summary="Récupérer toutes les transactions de l'utilisateur",
-     *     description="Retourne toutes les transactions où l'utilisateur connecté est soit l'expéditeur soit le destinataire.",
+     *     summary="Récupérer toutes les transactions de l'utilisateur avec filtrage et pagination",
+     *     description="Retourne toutes les transactions où l'utilisateur connecté est soit l'expéditeur soit le destinataire. Supporte le filtrage, le tri et la pagination.",
      *     tags={"Transactions"},
      *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"Dépôt", "Retrait", "Transfert d'argent"}),
+     *         description="Filtrer par type de transaction"
+     *     ),
+     *     @OA\Parameter(
+     *         name="date_from",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date", example="2025-11-01"),
+     *         description="Date de début (YYYY-MM-DD)"
+     *     ),
+     *     @OA\Parameter(
+     *         name="date_to",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date", example="2025-11-30"),
+     *         description="Date de fin (YYYY-MM-DD)"
+     *     ),
+     *     @OA\Parameter(
+     *         name="direction",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"incoming", "outgoing"}),
+     *         description="Direction des transactions (entrantes/sortantes)"
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="integer", minimum=1, maximum=100, default=15),
+     *         description="Nombre d'éléments par page"
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"date", "amount", "type"}, default="date"),
+     *         description="Champ de tri"
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_direction",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"asc", "desc"}, default="desc"),
+     *         description="Direction du tri"
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Transactions récupérées avec succès",
@@ -74,19 +123,44 @@ class TransactionSwagger
      *             @OA\Property(property="message", type="string", example="Transactions récupérées"),
      *             @OA\Property(
      *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(
-     *                     @OA\Property(property="id", type="string", example="cff03e8c-4020-429d-9181-92dcf970165b"),
-     *                     @OA\Property(property="type de transfere", type="string", example="Transfert d'argent"),
-     *                     @OA\Property(property="Numero", type="string", example="+221818930119", description="Numéro de téléphone de l'autre partie (expéditeur si l'utilisateur est destinataire, destinataire si l'utilisateur est expéditeur)"),
-     *                     @OA\Property(property="montant", type="number", format="float", example=35000),
-     *                     @OA\Property(property="dateCreation", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
-     *                     @OA\Property(
-     *                         property="metadata",
-     *                         type="object",
-     *                         @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-11-10T15:35:46Z"),
-     *                         @OA\Property(property="version", type="integer", example=1)
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="transactions",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         @OA\Property(property="id", type="string", example="cff03e8c-4020-429d-9181-92dcf970165b"),
+     *                         @OA\Property(property="type de transfere", type="string", example="Transfert d'argent"),
+     *                         @OA\Property(property="Numero", type="string", example="+221818930119", description="Numéro de téléphone de l'autre partie"),
+     *                         @OA\Property(property="montant", type="number", format="float", example=35000),
+     *                         @OA\Property(property="dateCreation", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
+     *                         @OA\Property(
+     *                             property="metadata",
+     *                             type="object",
+     *                             @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-11-10T15:35:46Z"),
+     *                             @OA\Property(property="version", type="integer", example=1)
+     *                         )
      *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="pagination",
+     *                     type="object",
+     *                     @OA\Property(property="current_page", type="integer", example=1),
+     *                     @OA\Property(property="last_page", type="integer", example=4),
+     *                     @OA\Property(property="per_page", type="integer", example=3),
+     *                     @OA\Property(property="total", type="integer", example=11),
+     *                     @OA\Property(property="from", type="integer", example=1),
+     *                     @OA\Property(property="to", type="integer", example=3)
+     *                 ),
+     *                 @OA\Property(
+     *                     property="filters_applied",
+     *                     type="object",
+     *                     description="Filtres appliqués à la requête"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="sort",
+     *                     type="object",
+     *                     @OA\Property(property="by", type="string", example="date"),
+     *                     @OA\Property(property="direction", type="string", example="desc")
      *                 )
      *             )
      *         )
@@ -95,7 +169,7 @@ class TransactionSwagger
      *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
      * )
      */
-    // public function index() {}
+    public function index() {}
 
     /**
      * @OA\Get(
