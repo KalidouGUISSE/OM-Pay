@@ -15,7 +15,7 @@ class AuthSwagger
      * @OA\Post(
      *     path="/api/v1/auth/initiate-login",
      *     summary="Initier la connexion avec OTP",
-     *     description="Permet d'initier la connexion en envoyant un numéro de téléphone. Un code OTP sera généré et envoyé.",
+     *     description="Permet d'initier la connexion en envoyant un numéro de téléphone. Un code OTP sera généré et envoyé automatiquement par SMS.",
      *     tags={"Authentification"},
      *     @OA\RequestBody(
      *         required=true,

@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Repositories\CompteRepository;
 use App\Models\OtpVerification;
+use App\Services\SmsService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Crypt;
@@ -11,10 +12,12 @@ use Carbon\Carbon;
 class AuthService
 {
     protected $compteRepo;
+    protected $smsService;
 
-    public function __construct(CompteRepository $compteRepo)
+    public function __construct(CompteRepository $compteRepo, SmsService $smsService)
     {
         $this->compteRepo = $compteRepo;
+        $this->smsService = $smsService;
     }
 
     /**

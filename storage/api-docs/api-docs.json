@@ -18,7 +18,7 @@
                     "Authentification"
                 ],
                 "summary": "Initier la connexion avec OTP",
-                "description": "Permet d'initier la connexion en envoyant un numéro de téléphone. Un code OTP sera généré et envoyé.",
+                "description": "Permet d'initier la connexion en envoyant un numéro de téléphone. Un code OTP sera généré et envoyé automatiquement par SMS.",
                 "operationId": "15ecb5d89c53604a52eb97c89e426bf4",
                 "requestBody": {
                     "required": true,
