@@ -190,6 +190,36 @@ class TransactionService
         ]);
     }
 
+    public function getSoldeByNumero(string $numero)
+    {
+        $solde = $this->transactionRepository->calculateBalance($numero);
+
+        return $this->successResponse('Solde calculé avec succès', [
+            'solde' => number_format($solde, 2, '.', ''),
+            'devise' => 'FCFA',
+            'numero_compte' => $numero,
+            'date_calculation' => now()->toISOString()
+        ]);
+    }
+
+    public function getTransactionsByNumero(string $numero)
+    {
+        $transactions = $this->transactionRepository->getTransactionsForUser($numero);
+
+        $formattedTransactions = $transactions->map(function ($transaction) use ($numero) {
+            return [
+                'id' => $transaction->id,
+                'type de transfere' => $transaction->type_transaction,
+                'Numero' => $transaction->expediteur === $numero ? $transaction->destinataire : $transaction->expediteur,
+                'montant' => $transaction->montant,
+                'dateCreation' => $transaction->date->toISOString(),
+                'metadata' => $transaction->metadata
+            ];
+        });
+
+        return $this->successResponse('Transactions récupérées', $formattedTransactions->toArray());
+    }
+
     private function genererReference(): string
     {
         do {

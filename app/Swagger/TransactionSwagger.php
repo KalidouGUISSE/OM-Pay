@@ -95,7 +95,7 @@ class TransactionSwagger
      *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
      * )
      */
-    public function index() {}
+    // public function index() {}
 
     /**
      * @OA\Get(
@@ -124,7 +124,7 @@ class TransactionSwagger
      *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
      * )
      */
-    public function getSolde() {}
+    // public function getSolde() {}
 
     /**
      * @OA\Get(
@@ -263,5 +263,86 @@ class TransactionSwagger
      *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant")
      * )
      */
+    /**
+     * @OA\Get(
+     *     path="/api/v1/compte/{numero}/solde",
+     *     summary="Récupérer le solde d'un compte par numéro",
+     *     description="Calcule et retourne le solde du compte spécifié par son numéro basé sur les transactions.",
+     *     tags={"Transactions"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="numero",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="string"),
+     *         description="Numéro du compte (numéro de téléphone)"
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Solde calculé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Solde calculé avec succès"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="solde", type="string", example="27933.58", description="Solde formaté avec 2 décimales"),
+     *                 @OA\Property(property="devise", type="string", example="FCFA"),
+     *                 @OA\Property(property="numero_compte", type="string", example="+221818930119"),
+     *                 @OA\Property(property="date_calculation", type="string", format="date-time", example="2025-11-10T18:45:00Z")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant"),
+     *     @OA\Response(response=404, description="Compte non trouvé")
+     * )
+     */
+    public function getSoldeByNumero() {}
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/compte/{numero}/transactions",
+     *     summary="Récupérer les transactions d'un compte par numéro",
+     *     description="Retourne toutes les transactions du compte spécifié par son numéro.",
+     *     tags={"Transactions"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(
+     *         name="numero",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="string"),
+     *         description="Numéro du compte (numéro de téléphone)"
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Transactions récupérées avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Transactions récupérées"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id", type="string", example="cff03e8c-4020-429d-9181-92dcf970165b"),
+     *                     @OA\Property(property="type de transfere", type="string", example="Transfert d'argent"),
+     *                     @OA\Property(property="Numero", type="string", example="+221818930119", description="Numéro de téléphone de l'autre partie"),
+     *                     @OA\Property(property="montant", type="number", format="float", example=35000),
+     *                     @OA\Property(property="dateCreation", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
+     *                     @OA\Property(
+     *                         property="metadata",
+     *                         type="object",
+     *                         @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-11-10T15:35:46Z"),
+     *                         @OA\Property(property="version", type="integer", example=1)
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Non autorisé - token manquant ou rôle insuffisant"),
+     *     @OA\Response(response=404, description="Compte non trouvé")
+     * )
+     */
+    public function getTransactionsByNumero() {}
+
     // public function getByDestinataire() {}
 }

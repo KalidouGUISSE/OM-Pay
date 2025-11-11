@@ -46,7 +46,11 @@ Route::middleware(['auth:api', 'logging'])->group(function () {
             return $request->user();
         });
 
-        // Routes pour les transactions
+        // Nouveaux endpoints pour les comptes par numéro
+        Route::get('/compte/{numero}/solde', [TransactionController::class, 'getSoldeByNumero'])->middleware('role:client,admin');
+        Route::get('/compte/{numero}/transactions', [TransactionController::class, 'getTransactionsByNumero'])->middleware('role:client,admin');
+
+        // Routes pour les transactions (anciennes maintenues)
         Route::get('/transactions', [TransactionController::class, 'index'])->middleware('role:client,admin');
         Route::get('/transactions/solde', [TransactionController::class, 'getSolde'])->middleware('role:client,admin');
         Route::post('/transactions', [TransactionController::class, 'store'])->middleware('role:client,admin');

@@ -76,4 +76,20 @@ class TransactionController extends Controller
     {
         return $this->transactionService->getSolde($request);
     }
+
+    /**
+     * Récupérer le solde d'un compte par numéro
+     */
+    public function getSoldeByNumero(Request $request, string $numero)
+    {
+        return $this->transactionService->getSoldeByNumero($numero);
+    }
+
+    /**
+     * Récupérer les transactions d'un compte par numéro
+     */
+    public function getTransactionsByNumero(Request $request, string $numero)
+    {
+        return $this->transactionService->getTransactionsByNumero($numero);
+    }
 }
