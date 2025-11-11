@@ -64,7 +64,7 @@ class AuthSwagger
      * @OA\Post(
      *     path="/api/v1/auth/verify-otp",
      *     summary="Vérifier le code OTP",
-     *     description="Permet de vérifier le code OTP reçu et d'obtenir un token d'authentification complet.",
+     *     description="Permet de vérifier le code OTP reçu et d'obtenir les tokens d'authentification.",
      *     tags={"Authentification"},
      *     @OA\RequestBody(
      *         required=true,
@@ -84,19 +84,9 @@ class AuthSwagger
      *                 property="data",
      *                 type="object",
      *                 @OA\Property(property="access_token", type="string", example="21|17vf3MfQS8c64IZvf4j5szpBMkPQF7uSLYoa70jkc33515bb"),
+     *                 @OA\Property(property="refresh_token", type="string", example="22|refresh_token_here"),
      *                 @OA\Property(property="token_type", type="string", example="Bearer"),
-     *                 @OA\Property(
-     *                     property="user",
-     *                     type="object",
-     *                     @OA\Property(property="id", type="string", example="d4f1ab82-a86e-4975-aa66-5ef804bfa246"),
-     *                     @OA\Property(property="nom", type="string", example="Ondricka"),
-     *                     @OA\Property(property="prenom", type="string", example="Tanya"),
-     *                     @OA\Property(property="role", type="string", example="client")
-     *                 ),
-     *                 @OA\Property(property="compte_id", type="string", example="228e7d7a-937b-40dd-88d7-ff8fa4d334f4"),
-     *                 @OA\Property(property="numero_telephone", type="string", example="+221818930119"),
-     *                 @OA\Property(property="role", type="string", example="client"),
-     *                 @OA\Property(property="permissions", type="array", @OA\Items(type="string"))
+     *                 @OA\Property(property="expires_in", type="integer", example=3600, description="Durée de validité de l'access token en secondes")
      *             )
      *         )
      *     ),
@@ -111,6 +101,63 @@ class AuthSwagger
      * )
      */
     public function verifyOtp(){}
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/auth/me",
+     *     summary="Informations de l'utilisateur authentifié",
+     *     description="Retourne les informations détaillées de l'utilisateur et de son compte. Nécessite un token d'accès valide.",
+     *     tags={"Authentification"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Informations récupérées avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Informations récupérées"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="user",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="string", example="d4f1ab82-a86e-4975-aa66-5ef804bfa246"),
+     *                     @OA\Property(property="nom", type="string", example="Dupont"),
+     *                     @OA\Property(property="prenom", type="string", example="Jean"),
+     *                     @OA\Property(property="role", type="string", example="client")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="compte",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="string", example="228e7d7a-937b-40dd-88d7-ff8fa4d334f4"),
+     *                     @OA\Property(property="numero_compte", type="string", example="NCMTPABC123"),
+     *                     @OA\Property(property="numero_telephone", type="string", example="+221781157773"),
+     *                     @OA\Property(property="type", type="string", example="simple"),
+     *                     @OA\Property(property="statut", type="string", example="actif"),
+     *                     @OA\Property(property="date_creation", type="string", format="date", example="2025-11-09")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token invalide ou expiré",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Utilisateur non authentifié")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Compte non trouvé")
+     *         )
+     *     )
+     * )
+     */
+    public function me(){}
 
     /**
      * @OA\Post(
@@ -152,7 +199,7 @@ class AuthSwagger
      *     )
      * )
      */
-    public function login(){}
+    // public function login(){}
 
 
 }

@@ -62,6 +62,68 @@ class AuthController extends Controller
     }
 
     /**
+     * Retourne les informations de l'utilisateur authentifié
+     */
+    public function me(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            if (!$user) {
+                return $this->errorResponse('Utilisateur non authentifié', 'unauthenticated', 401);
+            }
+
+            // Récupérer le compte associé via le token
+            $token = $request->bearerToken();
+            $accessToken = $user->tokens()->where('token', hash('sha256', $token))->first();
+
+            if (!$accessToken) {
+                return $this->errorResponse('Token invalide', 'invalid_token', 401);
+            }
+
+            // Extraire l'ID du compte depuis les abilities du token
+            $compteId = null;
+            foreach ($accessToken->abilities as $ability) {
+                if (str_starts_with($ability, 'compte_id:')) {
+                    $compteId = str_replace('compte_id:', '', $ability);
+                    break;
+                }
+            }
+
+            if (!$compteId) {
+                return $this->errorResponse('Informations de compte manquantes', 'missing_account_info', 400);
+            }
+
+            // Récupérer le compte depuis la base de données
+            $compte = \App\Models\Compte::with('user')->find($compteId);
+
+            if (!$compte) {
+                return $this->errorResponse('Compte non trouvé', 'account_not_found', 404);
+            }
+
+            return $this->successResponse('Informations récupérées', [
+                'user' => [
+                    'id' => $compte->user->id,
+                    'nom' => $compte->user->nom,
+                    'prenom' => $compte->user->prenom,
+                    'role' => $compte->user->role,
+                ],
+                'compte' => [
+                    'id' => $compte->id,
+                    'numero_compte' => $compte->numeroCompte,
+                    'numero_telephone' => $compte->numeroTelephone,
+                    'type' => $compte->type,
+                    'statut' => $compte->statut,
+                    'date_creation' => $compte->dateCreation,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Erreur lors de la récupération des informations', 'info_error', 500);
+        }
+    }
+
+    /**
      * Ancienne méthode de connexion (maintenue pour compatibilité)
      */
     public function login(LoginRequest $request)

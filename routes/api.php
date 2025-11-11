@@ -36,6 +36,7 @@ Route::prefix('v1/auth')->group(function () {
 Route::middleware(['auth:api', 'logging'])->group(function () {
     Route::prefix('v1/auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
     });
 
     Route::prefix('v1')->group(function () {

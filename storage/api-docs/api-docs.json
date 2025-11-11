@@ -133,7 +133,7 @@
                     "Authentification"
                 ],
                 "summary": "Vérifier le code OTP",
-                "description": "Permet de vérifier le code OTP reçu et d'obtenir un token d'authentification complet.",
+                "description": "Permet de vérifier le code OTP reçu et d'obtenir les tokens d'authentification.",
                 "operationId": "e3d832cac65082fe80b75bcefe64a3f5",
                 "requestBody": {
                     "required": true,
@@ -182,48 +182,18 @@
                                                     "type": "string",
                                                     "example": "21|17vf3MfQS8c64IZvf4j5szpBMkPQF7uSLYoa70jkc33515bb"
                                                 },
+                                                "refresh_token": {
+                                                    "type": "string",
+                                                    "example": "22|refresh_token_here"
+                                                },
                                                 "token_type": {
                                                     "type": "string",
                                                     "example": "Bearer"
                                                 },
-                                                "user": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "string",
-                                                            "example": "d4f1ab82-a86e-4975-aa66-5ef804bfa246"
-                                                        },
-                                                        "nom": {
-                                                            "type": "string",
-                                                            "example": "Ondricka"
-                                                        },
-                                                        "prenom": {
-                                                            "type": "string",
-                                                            "example": "Tanya"
-                                                        },
-                                                        "role": {
-                                                            "type": "string",
-                                                            "example": "client"
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                },
-                                                "compte_id": {
-                                                    "type": "string",
-                                                    "example": "228e7d7a-937b-40dd-88d7-ff8fa4d334f4"
-                                                },
-                                                "numero_telephone": {
-                                                    "type": "string",
-                                                    "example": "+221818930119"
-                                                },
-                                                "role": {
-                                                    "type": "string",
-                                                    "example": "client"
-                                                },
-                                                "permissions": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    }
+                                                "expires_in": {
+                                                    "description": "Durée de validité de l'access token en secondes",
+                                                    "type": "integer",
+                                                    "example": 3600
                                                 }
                                             },
                                             "type": "object"
@@ -257,43 +227,17 @@
                 }
             }
         },
-        "/api/v1/auth/login": {
-            "post": {
+        "/api/v1/auth/me": {
+            "get": {
                 "tags": [
                     "Authentification"
                 ],
-                "summary": "Connexion traditionnelle (numéro + PIN)",
-                "description": "Permet à un utilisateur de se connecter avec son numéro de téléphone et son code PIN. Méthode maintenue pour compatibilité.",
-                "operationId": "2ccdca282a3dfd24e3585a7fea327565",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "numeroTelephone",
-                                    "codePing"
-                                ],
-                                "properties": {
-                                    "numeroTelephone": {
-                                        "description": "Numéro de téléphone sénégalais valide",
-                                        "type": "string",
-                                        "example": "+221818930119"
-                                    },
-                                    "codePing": {
-                                        "description": "Code PIN du compte",
-                                        "type": "string",
-                                        "example": "1234"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
+                "summary": "Informations de l'utilisateur authentifié",
+                "description": "Retourne les informations détaillées de l'utilisateur et de son compte. Nécessite un token d'accès valide.",
+                "operationId": "a832927b2af4b61d8fe3e5516fa25c00",
                 "responses": {
                     "200": {
-                        "description": "Connexion réussie",
+                        "description": "Informations récupérées avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -304,25 +248,60 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Connexion réussie"
+                                            "example": "Informations récupérées"
                                         },
                                         "data": {
                                             "properties": {
-                                                "access_token": {
-                                                    "type": "string",
-                                                    "example": "1|xxxxxxxxxx"
+                                                "user": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "example": "d4f1ab82-a86e-4975-aa66-5ef804bfa246"
+                                                        },
+                                                        "nom": {
+                                                            "type": "string",
+                                                            "example": "Dupont"
+                                                        },
+                                                        "prenom": {
+                                                            "type": "string",
+                                                            "example": "Jean"
+                                                        },
+                                                        "role": {
+                                                            "type": "string",
+                                                            "example": "client"
+                                                        }
+                                                    },
+                                                    "type": "object"
                                                 },
-                                                "token_type": {
-                                                    "type": "string",
-                                                    "example": "Bearer"
-                                                },
-                                                "role": {
-                                                    "type": "string",
-                                                    "example": "client"
-                                                },
-                                                "compte_id": {
-                                                    "type": "string",
-                                                    "example": "228e7d7a-937b-40dd-88d7-ff8fa4d334f4"
+                                                "compte": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "example": "228e7d7a-937b-40dd-88d7-ff8fa4d334f4"
+                                                        },
+                                                        "numero_compte": {
+                                                            "type": "string",
+                                                            "example": "NCMTPABC123"
+                                                        },
+                                                        "numero_telephone": {
+                                                            "type": "string",
+                                                            "example": "+221781157773"
+                                                        },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "example": "simple"
+                                                        },
+                                                        "statut": {
+                                                            "type": "string",
+                                                            "example": "actif"
+                                                        },
+                                                        "date_creation": {
+                                                            "type": "string",
+                                                            "format": "date",
+                                                            "example": "2025-11-09"
+                                                        }
+                                                    },
+                                                    "type": "object"
                                                 }
                                             },
                                             "type": "object"
@@ -334,7 +313,7 @@
                         }
                     },
                     "401": {
-                        "description": "Identifiants invalides",
+                        "description": "Token invalide ou expiré",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -345,7 +324,27 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Numéro de téléphone ou code PIN invalide"
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte non trouvé"
                                         }
                                     },
                                     "type": "object"
@@ -353,7 +352,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/v1/comptes": {

@@ -101,15 +101,17 @@ class AuthService
                 'numero_telephone:' . $compte->numeroTelephone
             ])->plainTextToken;
 
+            // Créer un refresh token séparé
+            $refreshToken = $compte->user->createToken('Refresh Token', [
+                'type' => 'refresh',
+                'compte_id:' . $compte->id
+            ])->plainTextToken;
+
             return [
                 'access_token' => $token,
+                'refresh_token' => $refreshToken,
                 'token_type' => 'Bearer',
-                'user' => $compte->user,
-                'compte_id' => $compte->id,
-                'numero_telephone' => $compte->numeroTelephone,
-                'compte' => $compte,
-                'role' => $compte->user->role,
-                'permissions' => $this->getPermissionsForRole($compte->user->role),
+                'expires_in' => 3600, // 1 heure pour l'access token
             ];
 
         } catch (\Exception $e) {

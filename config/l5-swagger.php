@@ -39,6 +39,42 @@ return [
                 'deep_linking' => true,
             ],
 
+            'security' => [
+                [
+                    'bearerAuth' => []
+                ]
+            ],
+
+            'openapi' => '3.0.0',
+
+            'securityDefinitions' => [
+                'securitySchemes' => [
+                    'bearerAuth' => [
+                        'type' => 'http',
+                        'scheme' => 'bearer',
+                        'bearerFormat' => 'JWT',
+                        'description' => 'Entrez le token Bearer (ex: 27|ba15ac877eff911d13f8ba39ff5b0c9d807104cabe681bca0cacc9939549a1246cee3d3024a297e0d533)'
+                    ]
+                ]
+            ],
+
+            'components' => [
+                'securitySchemes' => [
+                    'bearerAuth' => [
+                        'type' => 'http',
+                        'scheme' => 'bearer',
+                        'bearerFormat' => 'JWT',
+                        'description' => 'Entrez le token Bearer (ex: 27|ba15ac877eff911d13f8ba39ff5b0c9d807104cabe681bca0cacc9939549a1246cee3d3024a297e0d533)'
+                    ],
+                    'sanctum' => [
+                        'type' => 'http',
+                        'scheme' => 'bearer',
+                        'bearerFormat' => 'JWT',
+                        'description' => 'Laravel Sanctum Bearer Token'
+                    ]
+                ]
+            ],
+
             'urls' => [
                 [
                     'name' => 'OM Pay API',
@@ -52,3 +88,4 @@ return [
         ],
     ],
 ];
+
