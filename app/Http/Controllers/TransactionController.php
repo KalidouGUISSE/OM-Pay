@@ -62,7 +62,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Récupérer toutes les transactions de l'utilisateur connecté avec filtrage et pagination
+     * Récupérer toutes les transactions d'un compte avec filtrage et pagination
      *
      * Paramètres de requête supportés :
      * - type: Filtrer par type (Dépôt, Retrait, Transfert d'argent)
@@ -73,9 +73,14 @@ class TransactionController extends Controller
      * - sort_by: Tri par (date, amount, type, défaut: date)
      * - sort_direction: Direction du tri (asc, desc, défaut: desc)
      */
-    public function index(Request $request)
+    public function index(Request $request, string $numero)
     {
-        return $this->transactionService->getTransactionsForUser($request);
+        // Validation du numéro de téléphone passé en paramètre URL
+        if (!preg_match('/^\+221[0-9]{9}$/', $numero)) {
+            return $this->errorResponse('Format de numéro de téléphone invalide', 'invalid_phone_format', 400);
+        }
+
+        return $this->transactionService->getTransactionsForUserByNumero($request, $numero);
     }
 
     /**

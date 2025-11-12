@@ -473,14 +473,162 @@
             }
         },
         "/api/v1/transactions": {
+            "post": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Créer une nouvelle transaction",
+                "description": "Crée une nouvelle transaction avec les informations fournies.",
+                "operationId": "7688f7a930f17e6fc17f61e55aedc1cf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "numero du destinataire",
+                                    "montant",
+                                    "type_transaction"
+                                ],
+                                "properties": {
+                                    "numero du destinataire": {
+                                        "description": "Numéro du destinataire au format sénégalais (+221XXXXXXXXX, doit exister en base et être différent de l'expéditeur)",
+                                        "type": "string",
+                                        "example": "+221880686841"
+                                    },
+                                    "montant": {
+                                        "description": "Montant de la transaction (doit être positif et supérieur à 0.01)",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 35000
+                                    },
+                                    "type_transaction": {
+                                        "description": "Type de transaction (obligatoire)",
+                                        "type": "string",
+                                        "enum": [
+                                            "transfert",
+                                            "Transfert d'argent"
+                                        ],
+                                        "example": "Transfert d'argent"
+                                    },
+                                    "date": {
+                                        "description": "Date de la transaction (optionnel)",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-03-15T00:00:00Z"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transaction créée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaction créée avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "cff03e8c-4020-429d-9181-92dcf970165b"
+                                                },
+                                                "type de transaction": {
+                                                    "type": "string",
+                                                    "example": "Transfert d'argent"
+                                                },
+                                                "Destinataire": {
+                                                    "type": "string",
+                                                    "example": "+221880686841"
+                                                },
+                                                "Expediteur": {
+                                                    "type": "string",
+                                                    "example": "+221818930119"
+                                                },
+                                                "montant": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 35000
+                                                },
+                                                "Date": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-03-15T00:00:00Z"
+                                                },
+                                                "Reference": {
+                                                    "type": "string",
+                                                    "example": "PP231115.2025.BA8F2"
+                                                },
+                                                "metadata": {
+                                                    "properties": {
+                                                        "derniereModification": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-11-10T15:35:46Z"
+                                                        },
+                                                        "version": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Données invalides - compte destinataire inexistant, expéditeur = destinataire, montant invalide, etc."
+                    },
+                    "401": {
+                        "description": "Non autorisé - token manquant ou rôle insuffisant"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/compte/{numero}/transactions": {
             "get": {
                 "tags": [
                     "Transactions"
                 ],
-                "summary": "Récupérer toutes les transactions de l'utilisateur avec filtrage et pagination",
-                "description": "Retourne toutes les transactions où l'utilisateur connecté est soit l'expéditeur soit le destinataire. Supporte le filtrage, le tri et la pagination.",
-                "operationId": "9d6c6414f4a09547a9eaeafcfeb6de11",
+                "summary": "Récupérer toutes les transactions d'un compte avec filtrage et pagination",
+                "description": "Retourne toutes les transactions d'un compte spécifique avec support du filtrage, du tri et de la pagination.",
+                "operationId": "3a7dc626eacfbe0ed230cd8b8175947f",
                 "parameters": [
+                    {
+                        "name": "numero",
+                        "in": "path",
+                        "description": "Numéro de téléphone du compte (format sénégalais +221XXXXXXXXX)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "+221818930119"
+                        }
+                    },
                     {
                         "name": "type",
                         "in": "query",
@@ -701,142 +849,6 @@
                         "sanctum": []
                     }
                 ]
-            },
-            "post": {
-                "tags": [
-                    "Transactions"
-                ],
-                "summary": "Créer une nouvelle transaction",
-                "description": "Crée une nouvelle transaction avec les informations fournies.",
-                "operationId": "7688f7a930f17e6fc17f61e55aedc1cf",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "numero du destinataire",
-                                    "montant",
-                                    "type_transaction"
-                                ],
-                                "properties": {
-                                    "numero du destinataire": {
-                                        "description": "Numéro du destinataire au format sénégalais (+221XXXXXXXXX, doit exister en base et être différent de l'expéditeur)",
-                                        "type": "string",
-                                        "example": "+221880686841"
-                                    },
-                                    "montant": {
-                                        "description": "Montant de la transaction (doit être positif et supérieur à 0.01)",
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 35000
-                                    },
-                                    "type_transaction": {
-                                        "description": "Type de transaction (obligatoire)",
-                                        "type": "string",
-                                        "enum": [
-                                            "transfert",
-                                            "Transfert d'argent"
-                                        ],
-                                        "example": "Transfert d'argent"
-                                    },
-                                    "date": {
-                                        "description": "Date de la transaction (optionnel)",
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-03-15T00:00:00Z"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Transaction créée avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Transaction créée avec succès"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "example": "cff03e8c-4020-429d-9181-92dcf970165b"
-                                                },
-                                                "type de transaction": {
-                                                    "type": "string",
-                                                    "example": "Transfert d'argent"
-                                                },
-                                                "Destinataire": {
-                                                    "type": "string",
-                                                    "example": "+221880686841"
-                                                },
-                                                "Expediteur": {
-                                                    "type": "string",
-                                                    "example": "+221818930119"
-                                                },
-                                                "montant": {
-                                                    "type": "number",
-                                                    "format": "float",
-                                                    "example": 35000
-                                                },
-                                                "Date": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2023-03-15T00:00:00Z"
-                                                },
-                                                "Reference": {
-                                                    "type": "string",
-                                                    "example": "PP231115.2025.BA8F2"
-                                                },
-                                                "metadata": {
-                                                    "properties": {
-                                                        "derniereModification": {
-                                                            "type": "string",
-                                                            "format": "date-time",
-                                                            "example": "2025-11-10T15:35:46Z"
-                                                        },
-                                                        "version": {
-                                                            "type": "integer",
-                                                            "example": 1
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Données invalides - compte destinataire inexistant, expéditeur = destinataire, montant invalide, etc."
-                    },
-                    "401": {
-                        "description": "Non autorisé - token manquant ou rôle insuffisant"
-                    },
-                    "422": {
-                        "description": "Erreur de validation"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/api/v1/transactions/{id}": {
@@ -998,105 +1010,6 @@
                                                 }
                                             },
                                             "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Non autorisé - token manquant ou rôle insuffisant"
-                    },
-                    "404": {
-                        "description": "Compte non trouvé"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/compte/{numero}/transactions": {
-            "get": {
-                "tags": [
-                    "Transactions"
-                ],
-                "summary": "Récupérer les transactions d'un compte par numéro",
-                "description": "Retourne toutes les transactions du compte spécifié par son numéro.",
-                "operationId": "b08f0e0748a3efcb8462ddd68a0ea2c3",
-                "parameters": [
-                    {
-                        "name": "numero",
-                        "in": "path",
-                        "description": "Numéro du compte (numéro de téléphone)",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Transactions récupérées avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Transactions récupérées"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "string",
-                                                        "example": "cff03e8c-4020-429d-9181-92dcf970165b"
-                                                    },
-                                                    "type de transfere": {
-                                                        "type": "string",
-                                                        "example": "Transfert d'argent"
-                                                    },
-                                                    "Numero": {
-                                                        "description": "Numéro de téléphone de l'autre partie",
-                                                        "type": "string",
-                                                        "example": "+221818930119"
-                                                    },
-                                                    "montant": {
-                                                        "type": "number",
-                                                        "format": "float",
-                                                        "example": 35000
-                                                    },
-                                                    "dateCreation": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-03-15T00:00:00Z"
-                                                    },
-                                                    "metadata": {
-                                                        "properties": {
-                                                            "derniereModification": {
-                                                                "type": "string",
-                                                                "format": "date-time",
-                                                                "example": "2025-11-10T15:35:46Z"
-                                                            },
-                                                            "version": {
-                                                                "type": "integer",
-                                                                "example": 1
-                                                            }
-                                                        },
-                                                        "type": "object"
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
                                         }
                                     },
                                     "type": "object"

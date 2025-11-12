@@ -258,6 +258,80 @@ class TransactionService
         ]);
     }
 
+    /**
+     * Récupérer toutes les transactions d'un compte spécifique avec filtrage et pagination
+     */
+    public function getTransactionsForUserByNumero(Request $request, string $numeroTelephone)
+    {
+        // Récupérer les paramètres de filtrage
+        $filters = [
+            'type' => $request->query('type'), // Dépôt, Retrait, Transfert d'argent
+            'date_from' => $request->query('date_from'), // YYYY-MM-DD
+            'date_to' => $request->query('date_to'), // YYYY-MM-DD
+            'direction' => $request->query('direction'), // incoming, outgoing
+        ];
+
+        // Supprimer les valeurs nulles/vides
+        $filters = array_filter($filters, function($value) {
+            return $value !== null && $value !== '';
+        });
+
+        // Paramètres de tri et pagination
+        $perPage = $request->query('per_page', 15);
+        $sortBy = $request->query('sort_by', 'date'); // date, amount, type
+        $sortDirection = $request->query('sort_direction', 'desc'); // asc, desc
+
+        // Validation des paramètres
+        if ($perPage < 1 || $perPage > 100) {
+            $perPage = 15;
+        }
+
+        $validSortFields = ['date', 'amount', 'montant', 'type'];
+        if (!in_array($sortBy, $validSortFields)) {
+            $sortBy = 'date';
+        }
+
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'desc';
+        }
+
+        $transactions = $this->transactionRepository->getFilteredTransactionsForUser(
+            $numeroTelephone,
+            $filters,
+            $perPage,
+            $sortBy,
+            $sortDirection
+        );
+
+        $formattedTransactions = collect($transactions->items())->map(function ($transaction) use ($numeroTelephone) {
+            return [
+                'id' => $transaction->id,
+                'type de transfere' => $transaction->type_transaction,
+                'Numero' => $transaction->expediteur === $numeroTelephone ? $transaction->destinataire : $transaction->expediteur,
+                'montant' => $transaction->montant,
+                'dateCreation' => $transaction->date->toISOString(),
+                'metadata' => $transaction->metadata
+            ];
+        });
+
+        return $this->successResponse('Transactions récupérées', [
+            'transactions' => $formattedTransactions,
+            'pagination' => [
+                'current_page' => $transactions->currentPage(),
+                'last_page' => $transactions->lastPage(),
+                'per_page' => $transactions->perPage(),
+                'total' => $transactions->total(),
+                'from' => $transactions->firstItem(),
+                'to' => $transactions->lastItem(),
+            ],
+            'filters_applied' => $filters,
+            'sort' => [
+                'by' => $sortBy,
+                'direction' => $sortDirection
+            ]
+        ]);
+    }
+
     public function getTransactionsByNumero(string $numero)
     {
         $transactions = $this->transactionRepository->getTransactionsForUser($numero);
