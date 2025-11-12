@@ -73,20 +73,35 @@ class AuthController extends Controller
                 return $this->errorResponse('Utilisateur non authentifié', 'unauthenticated', 401);
             }
 
-            // Récupérer le compte associé via le token
-            $token = $request->bearerToken();
-            $accessToken = $user->tokens()->where('token', hash('sha256', $token))->first();
+            // Essayer de récupérer les informations du compte depuis les abilities du token
+            $compteId = null;
+            $numeroTelephone = null;
 
-            if (!$accessToken) {
-                return $this->errorResponse('Token invalide', 'invalid_token', 401);
+            $token = $user->currentAccessToken();
+            if ($token && isset($token->abilities)) {
+                foreach ($token->abilities as $ability) {
+                    if (str_starts_with($ability, 'compte_id:')) {
+                        $compteId = str_replace('compte_id:', '', $ability);
+                    }
+                    if (str_starts_with($ability, 'numero_telephone:')) {
+                        $numeroTelephone = str_replace('numero_telephone:', '', $ability);
+                    }
+                }
             }
 
-            // Extraire l'ID du compte depuis les abilities du token
-            $compteId = null;
-            foreach ($accessToken->abilities as $ability) {
-                if (str_starts_with($ability, 'compte_id:')) {
-                    $compteId = str_replace('compte_id:', '', $ability);
-                    break;
+            // Si on a un numéro de téléphone mais pas d'ID compte, chercher le compte
+            if (!$compteId && $numeroTelephone) {
+                $compte = \App\Models\Compte::where('numeroTelephone', $numeroTelephone)->first();
+                if ($compte) {
+                    $compteId = $compte->id;
+                }
+            }
+
+            // Si on n'a toujours pas d'ID compte, essayer de récupérer le premier compte de l'utilisateur
+            if (!$compteId) {
+                $compte = $user->compte;
+                if ($compte) {
+                    $compteId = $compte->id;
                 }
             }
 
