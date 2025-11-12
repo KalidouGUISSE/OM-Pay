@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\InitiateLoginRequest;
+use App\Http\Requests\VerifyOtpRequest;
 use App\Http\Requests\LoginRequest;
 use App\Services\AuthService;
 use App\Repositories\TransactionRepository;
@@ -28,12 +30,8 @@ class AuthController extends Controller
     /**
      * Initie la connexion en générant un OTP
      */
-    public function initiateLogin(Request $request)
+    public function initiateLogin(InitiateLoginRequest $request)
     {
-        $request->validate([
-            'numeroTelephone' => 'required|string|regex:/^\+221[0-9]{9}$/',
-        ]);
-
         try {
             $result = $this->authService->initiateLogin($request->numeroTelephone);
             return $this->successResponse('OTP envoyé avec succès', $result);
@@ -47,13 +45,8 @@ class AuthController extends Controller
     /**
      * Vérifie l'OTP et complète l'authentification
      */
-    public function verifyOtp(Request $request)
+    public function verifyOtp(VerifyOtpRequest $request)
     {
-        $request->validate([
-            'token' => 'required|string',
-            'otp' => 'required|string|size:6',
-        ]);
-
         try {
             $tokenData = $this->authService->verifyOtp($request->token, $request->otp);
             return $this->successResponse('Authentification réussie', $tokenData);

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Traits\ResponseTraits;
 use Symfony\Component\HttpFoundation\Response;
 use App\Services\TransactionService;
+use App\Http\Requests\CreateTransactionRequest;
+use App\Http\Requests\GetTransactionsRequest;
 use App\Http\Requests\TransactionRequest;
 
 class TransactionController extends Controller
@@ -22,30 +24,8 @@ class TransactionController extends Controller
     /**
      * Créer une nouvelle transaction
      */
-    public function store(TransactionRequest $request, string $numero)
+    public function store(CreateTransactionRequest $request, string $numero)
     {
-        // Validation du numéro de téléphone passé en paramètre URL
-        if (!preg_match('/^\+221[0-9]{9}$/', $numero)) {
-            return $this->errorResponse('Format de numéro de téléphone invalide', 'invalid_phone_format', 400);
-        }
-
-        // Vérifier que le numéro correspond au compte de l'utilisateur authentifié
-        $user = $request->user();
-        $numeroTelephone = null;
-        $token = $user->currentAccessToken();
-        if ($token) {
-            foreach ($token->abilities ?? [] as $ability) {
-                if (str_starts_with($ability, 'numero_telephone:')) {
-                    $numeroTelephone = str_replace('numero_telephone:', '', $ability);
-                    break;
-                }
-            }
-        }
-
-        if (!$numeroTelephone || $numeroTelephone !== $numero) {
-            return $this->errorResponse('Vous ne pouvez créer des transactions que pour votre propre compte', 'unauthorized_account', 403);
-        }
-
         return $this->transactionService->creerTransaction($request, $numero);
     }
 
@@ -95,13 +75,8 @@ class TransactionController extends Controller
      * - sort_by: Tri par (date, amount, type, défaut: date)
      * - sort_direction: Direction du tri (asc, desc, défaut: desc)
      */
-    public function index(Request $request, string $numero)
+    public function index(GetTransactionsRequest $request, string $numero)
     {
-        // Validation du numéro de téléphone passé en paramètre URL
-        if (!preg_match('/^\+221[0-9]{9}$/', $numero)) {
-            return $this->errorResponse('Format de numéro de téléphone invalide', 'invalid_phone_format', 400);
-        }
-
         return $this->transactionService->getTransactionsForUserByNumero($request, $numero);
     }
 

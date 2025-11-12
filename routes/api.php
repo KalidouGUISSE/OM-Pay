@@ -33,7 +33,7 @@ Route::prefix('v1/auth')->group(function () {
 });
 
 // Routes protégées
-Route::middleware(['auth:api', 'logging'])->group(function () {
+Route::middleware(['auth:sanctum', 'logging'])->group(function () {
     Route::prefix('v1/auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
