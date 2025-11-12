@@ -2,8 +2,11 @@
 namespace App\Repositories;
 
 use App\Models\Transaction;
+use App\Contracts\Interfaces\TransactionRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class TransactionRepository
+class TransactionRepository implements TransactionRepositoryInterface
 {
     public function create(array $data): Transaction
     {

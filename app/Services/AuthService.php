@@ -1,7 +1,7 @@
 <?php
 namespace App\Services;
 
-use App\Repositories\CompteRepository;
+use App\Contracts\Interfaces\CompteRepositoryInterface;
 use App\Models\OtpVerification;
 use App\Services\SmsService;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +14,7 @@ class AuthService
     protected $compteRepo;
     protected $smsService;
 
-    public function __construct(CompteRepository $compteRepo, SmsService $smsService)
+    public function __construct(CompteRepositoryInterface $compteRepo, SmsService $smsService)
     {
         $this->compteRepo = $compteRepo;
         $this->smsService = $smsService;

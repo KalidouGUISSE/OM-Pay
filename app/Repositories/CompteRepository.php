@@ -2,8 +2,10 @@
 namespace App\Repositories;
 
 use App\Models\Compte;
+use App\Contracts\Interfaces\CompteRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 
-class CompteRepository
+class CompteRepository implements CompteRepositoryInterface
 {
 
     // public function findByTelephone(string $numeroTelephone): ?Compte

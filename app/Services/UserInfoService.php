@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Compte;
-use App\Repositories\TransactionRepository;
+use App\Contracts\Interfaces\TransactionRepositoryInterface;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\ResponseTraits;
 
@@ -11,9 +11,9 @@ class UserInfoService
 {
     use ResponseTraits;
 
-    protected TransactionRepository $transactionRepository;
+    protected TransactionRepositoryInterface $transactionRepository;
 
-    public function __construct(TransactionRepository $transactionRepository)
+    public function __construct(TransactionRepositoryInterface $transactionRepository)
     {
         $this->transactionRepository = $transactionRepository;
     }

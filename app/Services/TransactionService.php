@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Repositories\TransactionRepository;
+use App\Contracts\Interfaces\TransactionRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTraits;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,9 +14,9 @@ class TransactionService
 {
     use ResponseTraits;
 
-    protected TransactionRepository $transactionRepository;
+    protected TransactionRepositoryInterface $transactionRepository;
 
-    public function __construct(TransactionRepository $transactionRepository)
+    public function __construct(TransactionRepositoryInterface $transactionRepository)
     {
         $this->transactionRepository = $transactionRepository;
     }
