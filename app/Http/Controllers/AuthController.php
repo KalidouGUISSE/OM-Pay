@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Services\AuthService;
+use App\Repositories\TransactionRepository;
 use Illuminate\Auth\AuthenticationException;
 
 
@@ -16,10 +17,12 @@ class AuthController extends Controller
 {
     use ResponseTraits;
     protected $authService;
+    protected $transactionRepository;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, TransactionRepository $transactionRepository)
     {
         $this->authService = $authService;
+        $this->transactionRepository = $transactionRepository;
     }
 
     /**
@@ -116,6 +119,22 @@ class AuthController extends Controller
                 return $this->errorResponse('Compte non trouvé', 'account_not_found', 404);
             }
 
+            // Récupérer les 10 dernières transactions du compte
+            $transactions = $this->transactionRepository->getTransactionsForUser($compte->numeroTelephone);
+            $lastTenTransactions = $transactions->take(10)->map(function ($transaction) use ($compte) {
+                return [
+                    'id' => $transaction->id,
+                    'type_transaction' => $transaction->type_transaction,
+                    'montant' => $transaction->montant,
+                    'date' => $transaction->date->toISOString(),
+                    'reference' => $transaction->reference,
+                    'contrepartie' => $transaction->expediteur === $compte->numeroTelephone
+                        ? $transaction->destinataire
+                        : $transaction->expediteur,
+                    'direction' => $transaction->expediteur === $compte->numeroTelephone ? 'debit' : 'credit'
+                ];
+            });
+
             return $this->successResponse('Informations récupérées', [
                 'user' => [
                     'id' => $compte->user->id,
@@ -130,7 +149,8 @@ class AuthController extends Controller
                     'type' => $compte->type,
                     'statut' => $compte->statut,
                     'date_creation' => $compte->dateCreation,
-                ]
+                ],
+                'dernieres_transactions' => $lastTenTransactions->values()
             ]);
 
         } catch (\Exception $e) {

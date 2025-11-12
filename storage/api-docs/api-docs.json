@@ -232,8 +232,8 @@
                 "tags": [
                     "Authentification"
                 ],
-                "summary": "Informations de l'utilisateur authentifié",
-                "description": "Retourne les informations détaillées de l'utilisateur et de son compte. Nécessite un token d'accès valide.",
+                "summary": "Informations de l'utilisateur authentifié avec dernières transactions",
+                "description": "Retourne les informations détaillées de l'utilisateur, de son compte et les 10 dernières transactions effectuées sur ce compte.",
                 "operationId": "a832927b2af4b61d8fe3e5516fa25c00",
                 "responses": {
                     "200": {
@@ -256,15 +256,15 @@
                                                     "properties": {
                                                         "id": {
                                                             "type": "string",
-                                                            "example": "d4f1ab82-a86e-4975-aa66-5ef804bfa246"
+                                                            "example": "e8b26bdb-6568-4c57-85ab-6b24de56de1e"
                                                         },
                                                         "nom": {
                                                             "type": "string",
-                                                            "example": "Dupont"
+                                                            "example": "Kalidou"
                                                         },
                                                         "prenom": {
                                                             "type": "string",
-                                                            "example": "Jean"
+                                                            "example": "Utilisateur"
                                                         },
                                                         "role": {
                                                             "type": "string",
@@ -277,15 +277,15 @@
                                                     "properties": {
                                                         "id": {
                                                             "type": "string",
-                                                            "example": "228e7d7a-937b-40dd-88d7-ff8fa4d334f4"
+                                                            "example": "5d42b58b-4b5d-4782-b13f-c41f758b7258"
                                                         },
                                                         "numero_compte": {
                                                             "type": "string",
-                                                            "example": "NCMTPABC123"
+                                                            "example": "NCMTPKAL931"
                                                         },
                                                         "numero_telephone": {
                                                             "type": "string",
-                                                            "example": "+221781157773"
+                                                            "example": "+221784458786"
                                                         },
                                                         "type": {
                                                             "type": "string",
@@ -297,11 +297,55 @@
                                                         },
                                                         "date_creation": {
                                                             "type": "string",
-                                                            "format": "date",
-                                                            "example": "2025-11-09"
+                                                            "format": "date-time",
+                                                            "example": "2025-11-11T00:00:00Z"
                                                         }
                                                     },
                                                     "type": "object"
+                                                },
+                                                "dernieres_transactions": {
+                                                    "description": "Les 10 dernières transactions du compte",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "example": "db55cea5-57f3-4458-a767-347624d27f1e"
+                                                            },
+                                                            "type_transaction": {
+                                                                "type": "string",
+                                                                "example": "Dépôt"
+                                                            },
+                                                            "montant": {
+                                                                "type": "string",
+                                                                "example": "353313.00"
+                                                            },
+                                                            "date": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2025-11-08T15:51:34.000000Z"
+                                                            },
+                                                            "reference": {
+                                                                "type": "string",
+                                                                "example": "PP2511.2025.BA3WEA"
+                                                            },
+                                                            "contrepartie": {
+                                                                "description": "Numéro de téléphone de l'autre partie",
+                                                                "type": "string",
+                                                                "example": "+221000000000"
+                                                            },
+                                                            "direction": {
+                                                                "description": "Direction de la transaction pour ce compte",
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "credit",
+                                                                    "debit"
+                                                                ],
+                                                                "example": "credit"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
                                                 }
                                             },
                                             "type": "object"

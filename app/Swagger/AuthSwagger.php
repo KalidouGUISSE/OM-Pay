@@ -105,8 +105,8 @@ class AuthSwagger
     /**
      * @OA\Get(
      *     path="/api/v1/auth/me",
-     *     summary="Informations de l'utilisateur authentifié",
-     *     description="Retourne les informations détaillées de l'utilisateur et de son compte. Nécessite un token d'accès valide.",
+     *     summary="Informations de l'utilisateur authentifié avec dernières transactions",
+     *     description="Retourne les informations détaillées de l'utilisateur, de son compte et les 10 dernières transactions effectuées sur ce compte.",
      *     tags={"Authentification"},
      *     security={{"sanctum":{}}},
      *     @OA\Response(
@@ -121,20 +121,34 @@ class AuthSwagger
      *                 @OA\Property(
      *                     property="user",
      *                     type="object",
-     *                     @OA\Property(property="id", type="string", example="d4f1ab82-a86e-4975-aa66-5ef804bfa246"),
-     *                     @OA\Property(property="nom", type="string", example="Dupont"),
-     *                     @OA\Property(property="prenom", type="string", example="Jean"),
+     *                     @OA\Property(property="id", type="string", example="e8b26bdb-6568-4c57-85ab-6b24de56de1e"),
+     *                     @OA\Property(property="nom", type="string", example="Kalidou"),
+     *                     @OA\Property(property="prenom", type="string", example="Utilisateur"),
      *                     @OA\Property(property="role", type="string", example="client")
      *                 ),
      *                 @OA\Property(
      *                     property="compte",
      *                     type="object",
-     *                     @OA\Property(property="id", type="string", example="228e7d7a-937b-40dd-88d7-ff8fa4d334f4"),
-     *                     @OA\Property(property="numero_compte", type="string", example="NCMTPABC123"),
-     *                     @OA\Property(property="numero_telephone", type="string", example="+221781157773"),
+     *                     @OA\Property(property="id", type="string", example="5d42b58b-4b5d-4782-b13f-c41f758b7258"),
+     *                     @OA\Property(property="numero_compte", type="string", example="NCMTPKAL931"),
+     *                     @OA\Property(property="numero_telephone", type="string", example="+221784458786"),
      *                     @OA\Property(property="type", type="string", example="simple"),
      *                     @OA\Property(property="statut", type="string", example="actif"),
-     *                     @OA\Property(property="date_creation", type="string", format="date", example="2025-11-09")
+     *                     @OA\Property(property="date_creation", type="string", format="date-time", example="2025-11-11T00:00:00Z")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="dernieres_transactions",
+     *                     type="array",
+     *                     description="Les 10 dernières transactions du compte",
+     *                     @OA\Items(
+     *                         @OA\Property(property="id", type="string", example="db55cea5-57f3-4458-a767-347624d27f1e"),
+     *                         @OA\Property(property="type_transaction", type="string", example="Dépôt"),
+     *                         @OA\Property(property="montant", type="string", example="353313.00"),
+     *                         @OA\Property(property="date", type="string", format="date-time", example="2025-11-08T15:51:34.000000Z"),
+     *                         @OA\Property(property="reference", type="string", example="PP2511.2025.BA3WEA"),
+     *                         @OA\Property(property="contrepartie", type="string", example="+221000000000", description="Numéro de téléphone de l'autre partie"),
+     *                         @OA\Property(property="direction", type="string", enum={"credit", "debit"}, example="credit", description="Direction de la transaction pour ce compte")
+     *                     )
      *                 )
      *             )
      *         )
