@@ -3,12 +3,16 @@
 namespace App\Services;
 
 use App\Contracts\Interfaces\TransactionRepositoryInterface;
+use App\Contracts\Interfaces\CompteRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Traits\ResponseTraits;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Rules\PhoneTransferValidator;
+use App\Rules\MerchantTransferValidator;
 
 class TransactionService
 {
@@ -21,6 +25,78 @@ class TransactionService
         $this->transactionRepository = $transactionRepository;
     }
 
+    /**
+     * Valide les données de transfert selon le type spécifié
+     */
+    private function validateTransferData(array $data): mixed
+    {
+        // Récupérer le type de transfert depuis les données
+        $typeTransfert = $data['type_transfert'] ?? 'telephone'; // Par défaut téléphone
+
+        $validator = null;
+
+        switch ($typeTransfert) {
+            case 'telephone':
+                // Validation pour transfert par numéro de téléphone
+                $validator = Validator::make($data, [
+                    'numero du destinataire' => ['required', 'string', new PhoneTransferValidator($data['expediteur'] ?? null)],
+                    'montant' => 'required|numeric|min:0.01',
+                    'expediteur' => 'required|string|regex:/^\+221[0-9]{9}$/',
+                ], [
+                    'numero du destinataire.required' => 'Le numéro du destinataire est requis pour ce type de transfert.',
+                    'montant.required' => 'Le montant est requis.',
+                    'montant.numeric' => 'Le montant doit être un nombre.',
+                    'montant.min' => 'Le montant doit être supérieur à 0.',
+                    'expediteur.required' => 'L\'expéditeur est requis.',
+                    'expediteur.regex' => 'Le numéro de l\'expéditeur doit être un numéro sénégalais valide.',
+                ]);
+
+                // Si la validation passe, définir le destinataire
+                if ($validator->passes()) {
+                    $data['destinataire'] = $data['numero du destinataire'];
+                }
+                break;
+
+            case 'marchand':
+                // Validation pour transfert par code marchand
+                $validator = Validator::make($data, [
+                    'code_marchand' => ['required', 'string', new MerchantTransferValidator()],
+                    'montant' => 'required|numeric|min:0.01',
+                    'expediteur' => 'required|string|regex:/^\+221[0-9]{9}$/',
+                ], [
+                    'code_marchand.required' => 'Le code marchand est requis pour ce type de transfert.',
+                    'montant.required' => 'Le montant est requis.',
+                    'montant.numeric' => 'Le montant doit être un nombre.',
+                    'montant.min' => 'Le montant doit être supérieur à 0.',
+                    'expediteur.required' => 'L\'expéditeur est requis.',
+                    'expediteur.regex' => 'Le numéro de l\'expéditeur doit être un numéro sénégalais valide.',
+                ]);
+
+                // Si la validation passe, récupérer le numéro de téléphone du marchand
+                if ($validator->passes()) {
+                    $compteRepository = app(CompteRepositoryInterface::class);
+                    $compteMarchand = $compteRepository->findByMerchantCode($data['code_marchand']);
+                    if ($compteMarchand) {
+                        $data['destinataire'] = $compteMarchand->numeroTelephone;
+                    }
+                }
+                break;
+
+            default:
+                return $this->errorResponse('Type de transfert non supporté', 'unsupported_transfer_type', Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($validator && $validator->fails()) {
+            return $this->errorResponse(
+                'Données de transfert invalides: ' . $validator->errors()->first(),
+                'validation_failed',
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+
+        return true; // Validation réussie
+    }
+
     public function creerTransaction(Request $request, string $expediteur = null)
     {
         try {
@@ -29,6 +105,12 @@ class TransactionService
             // Si un expéditeur est fourni (depuis l'URL), l'utiliser
             if ($expediteur) {
                 $data['expediteur'] = $expediteur;
+            }
+
+            // Valider les données selon le type de transfert
+            $validationResult = $this->validateTransferData($data);
+            if ($validationResult !== true) {
+                return $validationResult; // Retourner l'erreur de validation
             }
 
             // Générer une référence unique

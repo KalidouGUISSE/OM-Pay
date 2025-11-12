@@ -27,4 +27,12 @@ class CompteRepository implements CompteRepositoryInterface
     {
         return Compte::find($id);
     }
+
+    public function findByMerchantCode(string $merchantCode): ?Compte
+    {
+        return Compte::where('numeroCompte', $merchantCode)
+                    ->where('type', 'marchand')
+                    ->where('statut', 'actif')
+                    ->first();
+    }
 }

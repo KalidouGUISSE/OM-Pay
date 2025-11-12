@@ -13,6 +13,11 @@ interface CompteRepositoryInterface
     public function findByNumeroTelephone(string $numeroTelephone): ?Compte;
 
     /**
+     * Trouve un compte marchand par code marchand
+     */
+    public function findByMerchantCode(string $merchantCode): ?Compte;
+
+    /**
      * Récupère tous les comptes
      */
     public function getAll(): Collection;
