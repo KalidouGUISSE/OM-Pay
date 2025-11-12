@@ -22,9 +22,31 @@ class TransactionController extends Controller
     /**
      * Créer une nouvelle transaction
      */
-    public function store(TransactionRequest $request)
+    public function store(TransactionRequest $request, string $numero)
     {
-        return $this->transactionService->creerTransaction($request);
+        // Validation du numéro de téléphone passé en paramètre URL
+        if (!preg_match('/^\+221[0-9]{9}$/', $numero)) {
+            return $this->errorResponse('Format de numéro de téléphone invalide', 'invalid_phone_format', 400);
+        }
+
+        // Vérifier que le numéro correspond au compte de l'utilisateur authentifié
+        $user = $request->user();
+        $numeroTelephone = null;
+        $token = $user->currentAccessToken();
+        if ($token) {
+            foreach ($token->abilities ?? [] as $ability) {
+                if (str_starts_with($ability, 'numero_telephone:')) {
+                    $numeroTelephone = str_replace('numero_telephone:', '', $ability);
+                    break;
+                }
+            }
+        }
+
+        if (!$numeroTelephone || $numeroTelephone !== $numero) {
+            return $this->errorResponse('Vous ne pouvez créer des transactions que pour votre propre compte', 'unauthorized_account', 403);
+        }
+
+        return $this->transactionService->creerTransaction($request, $numero);
     }
 
     /**

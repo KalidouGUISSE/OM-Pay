@@ -12,12 +12,19 @@ class TransactionSwagger
 {
     /**
      * @OA\Post(
-     *     path="/api/v1/transactions",
-     *     summary="Créer une nouvelle transaction",
-     *     description="Crée une nouvelle transaction avec les informations fournies.",
+     *     path="/api/v1/compte/{numero}/transactions",
+     *     summary="Créer une nouvelle transaction pour un compte",
+     *     description="Crée une nouvelle transaction depuis le compte spécifié. L'utilisateur ne peut créer des transactions que depuis son propre compte.",
      *     tags={"Transactions"},
      *     security={{"sanctum": {}}},
-     * @OA\RequestBody(
+     *     @OA\Parameter(
+     *         name="numero",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="string", example="+221784458786"),
+     *         description="Numéro de téléphone du compte expéditeur (doit correspondre au compte de l'utilisateur authentifié)"
+     *     ),
+     *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"numero du destinataire", "montant", "type_transaction"},

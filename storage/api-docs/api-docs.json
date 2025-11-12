@@ -472,144 +472,6 @@
                 ]
             }
         },
-        "/api/v1/transactions": {
-            "post": {
-                "tags": [
-                    "Transactions"
-                ],
-                "summary": "Créer une nouvelle transaction",
-                "description": "Crée une nouvelle transaction avec les informations fournies.",
-                "operationId": "7688f7a930f17e6fc17f61e55aedc1cf",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "numero du destinataire",
-                                    "montant",
-                                    "type_transaction"
-                                ],
-                                "properties": {
-                                    "numero du destinataire": {
-                                        "description": "Numéro du destinataire au format sénégalais (+221XXXXXXXXX, doit exister en base et être différent de l'expéditeur)",
-                                        "type": "string",
-                                        "example": "+221880686841"
-                                    },
-                                    "montant": {
-                                        "description": "Montant de la transaction (doit être positif et supérieur à 0.01)",
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 35000
-                                    },
-                                    "type_transaction": {
-                                        "description": "Type de transaction (obligatoire)",
-                                        "type": "string",
-                                        "enum": [
-                                            "transfert",
-                                            "Transfert d'argent"
-                                        ],
-                                        "example": "Transfert d'argent"
-                                    },
-                                    "date": {
-                                        "description": "Date de la transaction (optionnel)",
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-03-15T00:00:00Z"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Transaction créée avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Transaction créée avec succès"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "example": "cff03e8c-4020-429d-9181-92dcf970165b"
-                                                },
-                                                "type de transaction": {
-                                                    "type": "string",
-                                                    "example": "Transfert d'argent"
-                                                },
-                                                "Destinataire": {
-                                                    "type": "string",
-                                                    "example": "+221880686841"
-                                                },
-                                                "Expediteur": {
-                                                    "type": "string",
-                                                    "example": "+221818930119"
-                                                },
-                                                "montant": {
-                                                    "type": "number",
-                                                    "format": "float",
-                                                    "example": 35000
-                                                },
-                                                "Date": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2023-03-15T00:00:00Z"
-                                                },
-                                                "Reference": {
-                                                    "type": "string",
-                                                    "example": "PP231115.2025.BA8F2"
-                                                },
-                                                "metadata": {
-                                                    "properties": {
-                                                        "derniereModification": {
-                                                            "type": "string",
-                                                            "format": "date-time",
-                                                            "example": "2025-11-10T15:35:46Z"
-                                                        },
-                                                        "version": {
-                                                            "type": "integer",
-                                                            "example": 1
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Données invalides - compte destinataire inexistant, expéditeur = destinataire, montant invalide, etc."
-                    },
-                    "401": {
-                        "description": "Non autorisé - token manquant ou rôle insuffisant"
-                    },
-                    "422": {
-                        "description": "Erreur de validation"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/v1/compte/{numero}/transactions": {
             "get": {
                 "tags": [
@@ -842,6 +704,154 @@
                     },
                     "401": {
                         "description": "Non autorisé - token manquant ou rôle insuffisant"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Créer une nouvelle transaction pour un compte",
+                "description": "Crée une nouvelle transaction depuis le compte spécifié. L'utilisateur ne peut créer des transactions que depuis son propre compte.",
+                "operationId": "de3ac11907f5ec4594c74a4bd228b690",
+                "parameters": [
+                    {
+                        "name": "numero",
+                        "in": "path",
+                        "description": "Numéro de téléphone du compte expéditeur (doit correspondre au compte de l'utilisateur authentifié)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "+221784458786"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "numero du destinataire",
+                                    "montant",
+                                    "type_transaction"
+                                ],
+                                "properties": {
+                                    "numero du destinataire": {
+                                        "description": "Numéro du destinataire au format sénégalais (+221XXXXXXXXX, doit exister en base et être différent de l'expéditeur)",
+                                        "type": "string",
+                                        "example": "+221880686841"
+                                    },
+                                    "montant": {
+                                        "description": "Montant de la transaction (doit être positif et supérieur à 0.01)",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 35000
+                                    },
+                                    "type_transaction": {
+                                        "description": "Type de transaction (obligatoire)",
+                                        "type": "string",
+                                        "enum": [
+                                            "transfert",
+                                            "Transfert d'argent"
+                                        ],
+                                        "example": "Transfert d'argent"
+                                    },
+                                    "date": {
+                                        "description": "Date de la transaction (optionnel)",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-03-15T00:00:00Z"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transaction créée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transaction créée avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "cff03e8c-4020-429d-9181-92dcf970165b"
+                                                },
+                                                "type de transaction": {
+                                                    "type": "string",
+                                                    "example": "Transfert d'argent"
+                                                },
+                                                "Destinataire": {
+                                                    "type": "string",
+                                                    "example": "+221880686841"
+                                                },
+                                                "Expediteur": {
+                                                    "type": "string",
+                                                    "example": "+221818930119"
+                                                },
+                                                "montant": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 35000
+                                                },
+                                                "Date": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-03-15T00:00:00Z"
+                                                },
+                                                "Reference": {
+                                                    "type": "string",
+                                                    "example": "PP231115.2025.BA8F2"
+                                                },
+                                                "metadata": {
+                                                    "properties": {
+                                                        "derniereModification": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-11-10T15:35:46Z"
+                                                        },
+                                                        "version": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Données invalides - compte destinataire inexistant, expéditeur = destinataire, montant invalide, etc."
+                    },
+                    "401": {
+                        "description": "Non autorisé - token manquant ou rôle insuffisant"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
                     }
                 },
                 "security": [

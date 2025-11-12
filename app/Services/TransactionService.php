@@ -21,10 +21,15 @@ class TransactionService
         $this->transactionRepository = $transactionRepository;
     }
 
-    public function creerTransaction(Request $request)
+    public function creerTransaction(Request $request, string $expediteur = null)
     {
         try {
             $data = $request->all();
+
+            // Si un expéditeur est fourni (depuis l'URL), l'utiliser
+            if ($expediteur) {
+                $data['expediteur'] = $expediteur;
+            }
 
             // Générer une référence unique
             $data['reference'] = $this->genererReference();

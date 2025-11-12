@@ -53,7 +53,7 @@ Route::middleware(['auth:api', 'logging'])->group(function () {
         // Routes pour les transactions
         Route::get('/compte/{numero}/transactions', [TransactionController::class, 'index'])->middleware('role:client,admin');
         Route::get('/transactions/solde', [TransactionController::class, 'getSolde'])->middleware('role:client,admin');
-        Route::post('/transactions', [TransactionController::class, 'store'])->middleware('role:client,admin');
+        Route::post('/compte/{numero}/transactions', [TransactionController::class, 'store'])->middleware('role:client,admin');
         Route::get('/transactions/{id}', [TransactionController::class, 'show'])->middleware('role:client,admin');
         Route::get('/transactions/expediteur/{expediteur}', [TransactionController::class, 'getByExpediteur'])->middleware('role:client,admin');
         Route::get('/transactions/destinataire/{destinataire}', [TransactionController::class, 'getByDestinataire'])->middleware('role:client,admin');
