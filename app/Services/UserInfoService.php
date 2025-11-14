@@ -20,39 +20,23 @@ class UserInfoService
 
     /**
      * Extrait l'ID du compte depuis les abilities du token
+     * Note: Avec Passport JWT, cette information n'est pas disponible
      */
     public function extractCompteIdFromToken(Model $user): ?string
     {
-        $token = $user->currentAccessToken();
-        if (!$token || !isset($token->abilities)) {
-            return null;
-        }
-
-        foreach ($token->abilities as $ability) {
-            if (str_starts_with($ability, 'compte_id:')) {
-                return str_replace('compte_id:', '', $ability);
-            }
-        }
-
+        // Avec Passport JWT, nous n'avons pas accès aux abilities du token
+        // Cette méthode peut être adaptée selon les besoins
         return null;
     }
 
     /**
      * Extrait le numéro de téléphone depuis les abilities du token
+     * Note: Avec Passport JWT, cette information n'est pas disponible
      */
     public function extractNumeroTelephoneFromToken(Model $user): ?string
     {
-        $token = $user->currentAccessToken();
-        if (!$token || !isset($token->abilities)) {
-            return null;
-        }
-
-        foreach ($token->abilities as $ability) {
-            if (str_starts_with($ability, 'numero_telephone:')) {
-                return str_replace('numero_telephone:', '', $ability);
-            }
-        }
-
+        // Avec Passport JWT, nous n'avons pas accès aux abilities du token
+        // Cette méthode peut être adaptée selon les besoins
         return null;
     }
 
@@ -78,7 +62,7 @@ class UserInfoService
         }
 
         // Sinon, essayer de récupérer le premier compte de l'utilisateur
-        return $user->compte ?? null;
+        return $user->comptes()->first() ?? null;
     }
 
     /**

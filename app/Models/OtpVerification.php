@@ -38,11 +38,8 @@ class OtpVerification extends Model
      */
     public static function createForPhone(string $numeroTelephone): self
     {
-        // Invalider les OTP précédents pour ce numéro
-        self::where('numero_telephone', $numeroTelephone)
-            ->where('used', false)
-            ->update(['used' => true]);
-
+        // Créer un nouvel OTP sans invalider les précédents
+        // Les anciens seront invalidés automatiquement s'ils expirent
         return self::create([
             'numero_telephone' => $numeroTelephone,
             'otp_code' => self::generateOtp(),
@@ -56,9 +53,26 @@ class OtpVerification extends Model
      */
     public function isValid(string $otpCode): bool
     {
-        return !$this->used &&
-               $this->otp_code === $otpCode &&
-               $this->expires_at->isFuture();
+        $isNotUsed = !$this->used;
+        $codeMatches = $this->otp_code === $otpCode;
+        $notExpired = $this->expires_at->isFuture();
+
+        $result = $isNotUsed && $codeMatches && $notExpired;
+
+        \Log::info('Vérification isValid', [
+            'id' => $this->id,
+            'used' => $this->used,
+            'isNotUsed' => $isNotUsed,
+            'stored_code' => $this->otp_code,
+            'input_code' => $otpCode,
+            'codeMatches' => $codeMatches,
+            'expires_at' => $this->expires_at,
+            'notExpired' => $notExpired,
+            'result' => $result,
+            'now' => now()
+        ]);
+
+        return $result;
     }
 
     /**

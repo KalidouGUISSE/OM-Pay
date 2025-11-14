@@ -96,12 +96,13 @@ class AuthController extends Controller
     }
 
     /**
-     * Déconnexion - invalider le token
+     * Déconnexion - avec Passport JWT, les tokens sont stateless
+     * Le client doit simplement supprimer le token localement
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-
+        // Avec Passport JWT, pas de révocation côté serveur nécessaire
+        // Le client gère la suppression du token localement
         return $this->successResponse('Déconnexion réussie', []);
     }
 

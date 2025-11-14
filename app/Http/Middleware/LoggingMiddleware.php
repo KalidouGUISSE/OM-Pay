@@ -22,11 +22,8 @@ class LoggingMiddleware
         $ip = $request->ip();
 
         // Stocker l'ID du compte dans les attributs de la requête si disponible dans le token
-        if ($user && $user->currentAccessToken()) {
-            $token = $user->currentAccessToken();
-            // L'ID du compte pourrait être stocké dans les abilities ou metadata du token
-            // Pour l'instant, on utilise une approche différente
-        }
+        // Note: Avec Passport, currentAccessToken() n'est pas disponible pour JWT
+        // Cette logique peut être adaptée selon les besoins
 
         // Log l'opération avant traitement
         Log::info('API Operation', [

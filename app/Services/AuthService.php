@@ -42,9 +42,10 @@ class AuthService
         // Créer l'OTP
         $otp = OtpVerification::createForPhone($numeroTelephone);
 
-        // Générer un token temporaire contenant le numéro de téléphone
+        // Générer un token temporaire contenant le numéro de téléphone et l'ID OTP
         $tempToken = Crypt::encryptString(json_encode([
             'numero_telephone' => $numeroTelephone,
+            'otp_id' => $otp->id,
             'expires_at' => Carbon::now()->addMinutes(5)->toISOString(),
         ]));
 
@@ -65,47 +66,81 @@ class AuthService
             // Décrypter le token temporaire
             $tempData = json_decode(Crypt::decryptString($tempToken), true);
 
-            if (!$tempData || !isset($tempData['numero_telephone'])) {
+            if (!$tempData || !isset($tempData['numero_telephone']) || !isset($tempData['otp_id'])) {
+                \Log::error('Token temporaire invalide', ['tempData' => $tempData]);
                 throw new AuthenticationException('Token temporaire invalide');
             }
 
             // Vérifier l'expiration du token temporaire
             if (Carbon::parse($tempData['expires_at'])->isPast()) {
+                \Log::error('Token temporaire expiré', ['expires_at' => $tempData['expires_at']]);
                 throw new AuthenticationException('Token temporaire expiré');
             }
 
             $numeroTelephone = $tempData['numero_telephone'];
+            $otpId = $tempData['otp_id'];
+            \Log::info('Vérification OTP', [
+                'numero_telephone' => $numeroTelephone,
+                'otp_id' => $otpId,
+                'otp_code' => $otpCode
+            ]);
 
-            // Trouver l'OTP valide
-            $otp = OtpVerification::where('numero_telephone', $numeroTelephone)
+            // Trouver l'OTP spécifique par ID
+            $otp = OtpVerification::where('id', $otpId)
+                ->where('numero_telephone', $numeroTelephone)
                 ->where('used', false)
                 ->where('expires_at', '>', Carbon::now())
                 ->first();
 
+            \Log::info('OTP trouvé', [
+                'otp_exists' => $otp ? true : false,
+                'otp_code_stored' => $otp ? $otp->otp_code : null,
+                'otp_used' => $otp ? $otp->used : null,
+                'otp_expires_at' => $otp ? $otp->expires_at : null
+            ]);
+
             if (!$otp || !$otp->isValid($otpCode)) {
+                \Log::error('OTP invalide', [
+                    'otp_exists' => $otp ? true : false,
+                    'is_valid' => $otp ? $otp->isValid($otpCode) : false
+                ]);
                 throw new AuthenticationException('Code OTP invalide ou expiré');
             }
 
             // Marquer l'OTP comme utilisé
             $otp->markAsUsed();
+            \Log::info('OTP marqué comme utilisé', ['otp_id' => $otp->id]);
 
             // Récupérer le compte et procéder à l'authentification complète
             $compte = $this->compteRepo->findByNumeroTelephone($numeroTelephone);
+            \Log::info('Compte trouvé', ['compte_exists' => $compte ? true : false, 'numero' => $numeroTelephone]);
 
             if (!$compte || $compte->statut !== 'actif') {
+                \Log::error('Compte invalide', ['compte' => $compte, 'statut' => $compte ? $compte->statut : null]);
                 throw new AuthenticationException('Compte non trouvé ou inactif');
             }
 
-            $token = $compte->user->createToken('Personal Access Token', [
-                'compte_id:' . $compte->id,
-                'numero_telephone:' . $compte->numeroTelephone
-            ])->plainTextToken;
+            \Log::info('Création des tokens', ['compte_id' => $compte->id, 'user_exists' => $compte->user ? true : false, 'user_id' => $compte->user ? $compte->user->id : null]);
 
-            // Créer un refresh token séparé
-            $refreshToken = $compte->user->createToken('Refresh Token', [
-                'type' => 'refresh',
-                'compte_id:' . $compte->id
-            ])->plainTextToken;
+            try {
+                // Créer un token d'accès avec Passport
+                $accessToken = $compte->user->createToken('Personal Access Token');
+                $token = $accessToken->accessToken;
+
+                // Créer un refresh token séparé
+                $refreshTokenObj = $compte->user->createToken('Refresh Token');
+                $refreshToken = $refreshTokenObj->accessToken;
+
+                \Log::info('Tokens créés avec succès', [
+                    'access_token_length' => strlen($token),
+                    'refresh_token_length' => strlen($refreshToken),
+                    'access_token_id' => $accessToken->token->id,
+                    'refresh_token_id' => $refreshTokenObj->token->id
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Erreur création tokens', ['error' => $e->getMessage()]);
+                throw $e;
+            }
 
             return [
                 'access_token' => $token,
