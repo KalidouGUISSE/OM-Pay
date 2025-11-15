@@ -106,6 +106,7 @@ class UserInfoService
                 'type' => $compte->type,
                 'statut' => $compte->statut,
                 'date_creation' => $compte->dateCreation,
+                'code_qr' => $compte->code_qr,
             ],
             'dernieres_transactions' => $this->getLastTenTransactions($compte)
         ];

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use App\Models\User;
 
 class Compte extends Model
@@ -25,6 +27,7 @@ class Compte extends Model
         'dateCreation',
         'statut',
         'metadata',
+        'code_qr',
     ];
 
     protected $casts = [
@@ -65,7 +68,7 @@ class Compte extends Model
         ];
     }
 
-    // Génération automatique de l'UUID
+    // Génération automatique de l'UUID et QR code
     protected static function boot()
     {
         parent::boot();
@@ -74,7 +77,34 @@ class Compte extends Model
             if (! $model->id) {
                 $model->id = Str::uuid()->toString();
             }
+
+            // Générer automatiquement le QR code
+            if (!$model->code_qr) {
+                $model->code_qr = $model->generateQrCode();
+            }
         });
+    }
+
+    /**
+     * Génère un QR code pour le compte
+     */
+    public function generateQrCode(): string
+    {
+        // Contenu du QR code : ID du compte et numéro de téléphone
+        $qrContent = json_encode([
+            'id' => $this->id,
+            'numero_compte' => $this->numeroCompte,
+            'numero_telephone' => $this->numeroTelephone,
+            'type' => $this->type,
+        ]);
+
+        $qrCode = new QrCode($qrContent);
+
+        $writer = new PngWriter();
+        $result = $writer->write($qrCode);
+
+        // Retourner le QR code en base64 pour stockage en base de données
+        return 'data:image/png;base64,' . base64_encode($result->getString());
     }
     public function user()
 {

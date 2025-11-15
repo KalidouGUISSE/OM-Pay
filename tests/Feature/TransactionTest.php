@@ -104,4 +104,25 @@ class TransactionTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    /** @test */
+    public function account_has_qr_code_generated_automatically()
+    {
+        // Créer un utilisateur et un compte de test
+        $user = User::factory()->create();
+        $compte = Compte::factory()->create([
+            'id_client' => $user->id,
+            'numeroTelephone' => '+221771234567',
+            'codePing' => Hash::make('1234'),
+            'statut' => 'actif',
+        ]);
+
+        // Vérifier que le QR code a été généré automatiquement
+        $this->assertNotNull($compte->code_qr);
+        $this->assertStringStartsWith('data:image/png;base64,', $compte->code_qr);
+
+        // Vérifier que le QR code contient les bonnes informations
+        $qrData = base64_decode(str_replace('data:image/png;base64,', '', $compte->code_qr));
+        $this->assertNotEmpty($qrData);
+    }
 }

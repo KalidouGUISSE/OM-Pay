@@ -26,12 +26,13 @@ class CompteSwagger
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
-     *                 @OA\Items(
+     *                     @OA\Items(
      *                     @OA\Property(property="id", type="string", example="10e5ea70-d168-4d14-b6ef-eef90221e630"),
      *                     @OA\Property(property="numeroCompte", type="string", example="T3YK5AED7K"),
      *                     @OA\Property(property="type", type="string", example="marchand"),
      *                     @OA\Property(property="statut", type="string", example="actif"),
      *                     @OA\Property(property="dateCreation", type="string", format="date-time"),
+     *                     @OA\Property(property="code_qr", type="string", description="QR code en base64", example="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."),
      *                 )
      *             )
      *         )
@@ -39,5 +40,5 @@ class CompteSwagger
      *     @OA\Response(response=401, description="Non autorisé")
      * )
      */
-    public function index() {}
+    // public function index() {}
 }
