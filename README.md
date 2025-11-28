@@ -1,49 +1,68 @@
 # OM Pay - API de Gestion de Comptes et Transactions
 
-## Vue d'ensemble
+## Description du projet
 
-OM Pay est une application Laravel conçue pour la gestion de comptes bancaires ou financiers et de transactions, inspirée des services de paiement mobile comme Orange Money. L'application fournit une API REST complète pour l'authentification des utilisateurs, la gestion des comptes et les opérations de paiement.
+OM Pay est une application API REST développée avec Laravel, conçue pour la gestion de comptes bancaires ou financiers et de transactions. Inspirée des services de paiement mobile comme Orange Money, l'application fournit une plateforme sécurisée pour l'authentification des utilisateurs, la gestion des comptes et les opérations de paiement. Elle intègre un système d'authentification moderne basé sur OTP (One-Time Password) et supporte les transferts entre comptes via numéros de téléphone sénégalais.
 
-## Architecture du Projet
-
-Le projet suit l'architecture standard de Laravel 10 avec une séparation claire des responsabilités :
-
-- **Modèles** : `User`, `Compte` et `Transaction` avec relations Eloquent
-- **Contrôleurs** : `AuthController` pour l'authentification, `CompteController` pour la gestion des comptes, `TransactionController` pour les transactions
-- **Services** : `AuthService`, `CompteService` et `TransactionService` pour la logique métier
-- **Traits** : `ResponseTraits` pour standardiser les réponses API
-- **Base de données** : MySQL avec migrations, seeders et factories
-- **Middleware** : Authentification, logging et contrôle des rôles
-
-## Fonctionnalités Principales
+## Fonctionnalités principales
 
 ### 1. Authentification
-- **Nouvelle méthode OTP** : Connexion via numéro de téléphone uniquement (génère un code OTP temporaire)
-- **Méthode traditionnelle** : Connexion via numéro de téléphone et code PIN (maintenue pour compatibilité)
-- Génération de tokens d'accès (OAuth2 avec Passport)
-- Rafraîchissement et déconnexion des tokens
+- **Authentification OTP moderne** : Connexion en deux étapes avec génération automatique de codes temporaires
+- **Authentification traditionnelle** : Support maintenu pour compatibilité (numéro de téléphone + PIN)
+- **Gestion des tokens** : Utilisation de Laravel Passport pour l'authentification OAuth2
+- **Expiration automatique** : Tokens temporaires valides 5 minutes, tokens d'accès 1 heure
 
-### 2. Gestion des Comptes
-- Création, lecture, mise à jour et suppression de comptes
-- Filtrage par type (simple/marchand) et statut (actif/bloqué/fermé)
-- Recherche par numéro de compte ou informations client
-- Pagination des résultats
-- Validation des numéros de téléphone sénégalais
+### 2. Gestion des comptes
+- **CRUD complet** : Création, lecture, mise à jour et suppression de comptes
+- **Filtrage avancé** : Par type (simple/marchand), statut (actif/bloqué/fermé)
+- **Recherche** : Par numéro de compte ou informations client
+- **Pagination** : Résultats paginés pour une performance optimale
+- **Validation stricte** : Numéros de téléphone sénégalais uniquement (+221...)
+- **Génération QR code** : QR codes automatiques pour chaque compte
 
-### 3. Gestion des Transactions
-- Création et consultation des transactions
-- Transferts entre comptes via numéros de téléphone
-- Calcul du solde en temps réel
-- Historique des transactions par expéditeur/destinataire
-- Validation des montants et références uniques
+### 3. Gestion des transactions
+- **Création de transactions** : Transferts entre comptes via numéros de téléphone
+- **Calcul de solde** : Solde en temps réel basé sur l'historique des transactions
+- **Historique complet** : Transactions par expéditeur/destinataire avec filtrage
+- **Références uniques** : Génération automatique de références de transaction
+- **Validation des montants** : Contrôles stricts sur les montants et références
 
-### 4. Architecture Modulaire
-- Séparation des préoccupations avec services et traits
-- Réponses API standardisées (succès/erreur)
-- Utilisation d'UUID pour les identifiants
-- Middleware de logging et contrôle d'accès
+### 4. Architecture modulaire
+- **Séparation des préoccupations** : Services métier, repositories, contrôleurs
+- **Réponses standardisées** : Trait ResponseTraits pour uniformiser les réponses API
+- **Utilisation d'UUID** : Identifiants uniques pour tous les enregistrements
+- **Middleware de logging** : Journalisation automatique des requêtes
+- **Middleware de rôles** : Contrôle d'accès basé sur les rôles (client/admin)
 
-## Structure de la Base de Données
+## Architecture et technologies
+
+### Technologies principales
+- **PHP** : Version 8.1 ou supérieure
+- **Laravel Framework** : Version 10.10
+- **Laravel Passport** : Version 12.4 (authentification OAuth2)
+- **Laravel Sanctum** : Version 3.3 (authentification légère)
+- **Base de données** : MySQL/MariaDB
+- **Documentation API** : L5-Swagger 8.6
+
+### Dépendances externes
+- **Guzzle HTTP** : ^7.2 (requêtes HTTP externes)
+- **Endroid QR Code** : ^6.0 (génération de QR codes)
+- **Twilio SDK** : ^8.8 (services SMS)
+- **Debugbar** : ^3.16 (développement)
+- **PHPUnit** : ^10.1 (tests)
+
+### Architecture applicative
+L'application suit le pattern MVC (Modèle-Vue-Contrôleur) de Laravel avec des extensions :
+
+- **Modèles Eloquent** : Relations et logique métier
+- **Contrôleurs** : Gestion des requêtes HTTP et réponses
+- **Services** : Logique métier centralisée (AuthService, TransactionService, etc.)
+- **Repositories** : Abstraction de l'accès aux données
+- **Traits** : Réutilisation de code (ResponseTraits)
+- **Middleware** : Filtrage et traitement des requêtes
+- **Requests** : Validation des données d'entrée
+
+## Modèles de données
 
 ### Table `users`
 - `id` : UUID (clé primaire)
@@ -62,6 +81,7 @@ Le projet suit l'architecture standard de Laravel 10 avec une séparation claire
 - `dateCreation` : Date de création
 - `statut` : Statut du compte (actif/bloqué/fermé)
 - `metadata` : Données JSON supplémentaires
+- `code_qr` : QR code en base64
 - `timestamps`
 
 ### Table `transactions`
@@ -75,18 +95,39 @@ Le projet suit l'architecture standard de Laravel 10 avec une séparation claire
 - `metadata` : Données JSON supplémentaires
 - `timestamps`
 
-## Dépendances
+### Table `otp_verifications`
+- `id` : Clé primaire
+- `numero_telephone` : Numéro de téléphone associé
+- `otp_code` : Code OTP de 6 chiffres
+- `expires_at` : Date d'expiration (5 minutes)
+- `used` : Indicateur d'utilisation
+- `timestamps`
 
-- **PHP** : ^8.1
-- **Laravel Framework** : ^10.10
-- **Laravel Passport** : ^12.4 (authentification OAuth2)
-- **Laravel Sanctum** : ^3.3 (authentification légère)
-- **Guzzle HTTP** : ^7.2 (requêtes externes)
-- **L5-Swagger** : ^8.6 (documentation API)
-- **Debugbar** : ^3.16 (développement)
-- **PHPUnit** : ^10.1 (tests)
+## API endpoints
 
-## Installation et Configuration
+### Authentification
+- `POST /api/v1/auth/initiate-login` : Initier la connexion (génère OTP)
+- `POST /api/v1/auth/verify-otp` : Vérifier l'OTP et obtenir le token complet
+- `POST /api/v1/auth/login` : Connexion traditionnelle (numéro + PIN)
+- `POST /api/v1/auth/refresh` : Rafraîchir le token
+- `POST /api/v1/auth/logout` : Déconnexion
+- `GET /api/v1/auth/me` : Informations de l'utilisateur connecté
+
+### Comptes
+- `GET /api/v1/comptes` : Lister les comptes (avec filtres et recherche)
+- `GET /api/v1/comptes/{id}` : Détails d'un compte
+
+### Transactions
+- `GET /api/v1/transactions` : Lister les transactions de l'utilisateur
+- `GET /api/v1/transactions/solde` : Obtenir le solde du compte
+- `POST /api/v1/transactions` : Créer une nouvelle transaction
+- `GET /api/v1/transactions/{id}` : Détails d'une transaction
+- `GET /api/v1/transactions/expediteur/{numero}` : Transactions par expéditeur
+- `GET /api/v1/transactions/destinataire/{numero}` : Transactions par destinataire
+- `GET /api/v1/compte/{numero}/solde` : Solde par numéro de téléphone
+- `GET /api/v1/compte/{numero}/transactions` : Transactions par numéro de téléphone
+
+## Installation et configuration
 
 ### Prérequis
 - PHP 8.1 ou supérieur
@@ -143,67 +184,12 @@ Le projet suit l'architecture standard de Laravel 10 avec une séparation claire
 docker-compose up -d
 ```
 
-## API Endpoints
+## Utilisation
 
-### Authentification
-- `POST /api/v1/auth/initiate-login` : Initier la connexion (génère OTP)
-- `POST /api/v1/auth/verify-otp` : Vérifier l'OTP et obtenir le token complet
-- `POST /api/v1/auth/login` : Connexion traditionnelle (numéro + PIN) - maintenue
-- `POST /api/v1/auth/refresh` : Rafraîchir le token
-- `POST /api/v1/auth/logout` : Déconnexion
-
-### Comptes
-- `GET /api/v1/comptes` : Lister les comptes (avec filtres et recherche)
-- `GET /api/v1/comptes/{id}` : Détails d'un compte
-
-### Transactions
-- `GET /api/v1/transactions` : Lister les transactions de l'utilisateur
-- `GET /api/v1/transactions/solde` : Obtenir le solde du compte
-- `POST /api/v1/transactions` : Créer une nouvelle transaction
-- `GET /api/v1/transactions/{id}` : Détails d'une transaction
-- `GET /api/v1/transactions/expediteur/{numero}` : Transactions par expéditeur
-- `GET /api/v1/transactions/destinataire/{numero}` : Transactions par destinataire
-
-### Utilisateur
-- `GET /api/v1/user` : Informations de l'utilisateur connecté
-
-## Authentification - Nouvelle Implémentation OTP
-
-### Fonctionnement Actuel (Méthode OTP - Recommandée)
-L'authentification se fait maintenant en **deux étapes** avec un système OTP :
+### Authentification OTP (recommandée)
 
 #### Étape 1 : Initiation de la connexion
-- **Endpoint** : `POST /api/v1/auth/initiate-login`
-- **Corps de la requête** : Uniquement le numéro de téléphone
-- **Processus** :
-  - Vérification de l'existence du compte
-  - Génération d'un code OTP de 6 chiffres
-  - Création d'un token temporaire (valable 5 minutes)
-  - Stockage sécurisé de l'OTP en base
-
-#### Étape 2 : Vérification de l'OTP
-- **Endpoint** : `POST /api/v1/auth/verify-otp`
-- **Corps de la requête** : Token temporaire + Code OTP
-- **Processus** :
-  - Validation du token temporaire
-  - Vérification de l'OTP (non expiré, non utilisé)
-  - Génération du token d'authentification complet
-  - Marquage de l'OTP comme utilisé
-
-### Structure de Base de Données Mise à Jour
-
-#### Table `otp_verifications` (nouvelle)
-- `id` : Clé primaire
-- `numero_telephone` : Numéro de téléphone associé
-- `otp_code` : Code OTP de 6 chiffres
-- `expires_at` : Date d'expiration (5 minutes)
-- `used` : Indicateur d'utilisation
-- `timestamps`
-
-### API Authentification - Nouvelle Méthode OTP
-
-#### Étape 1 : Initier la connexion
-```
+```bash
 POST /api/v1/auth/initiate-login
 Content-Type: application/json
 
@@ -212,21 +198,8 @@ Content-Type: application/json
 }
 ```
 
-#### Réponse de succès (Étape 1)
-```json
-{
-    "success": true,
-    "message": "OTP envoyé avec succès",
-    "data": {
-        "temp_token": "eyJpdiI6Imtka1RhdzBtVzRObkNoYktrS3NGWWc9PSIs...",
-        "message": "OTP envoyé avec succès",
-        "expires_in": 300
-    }
-}
-```
-
-#### Étape 2 : Vérifier l'OTP
-```
+#### Étape 2 : Vérification de l'OTP
+```bash
 POST /api/v1/auth/verify-otp
 Content-Type: application/json
 
@@ -236,145 +209,98 @@ Content-Type: application/json
 }
 ```
 
-#### Réponse de succès (Étape 2)
-```json
-{
-    "success": true,
-    "message": "Authentification réussie",
-    "data": {
-        "access_token": "21|17vf3MfQS8c64IZvf4j5szpBMkPQF7uSLYoa70jkc33515bb",
-        "token_type": "Bearer",
-        "user": {
-            "id": "uuid-user",
-            "nom": "Dupont",
-            "prenom": "Jean",
-            "role": "client"
-        },
-        "compte_id": "uuid-compte",
-        "numero_telephone": "+221818930119",
-        "compte": { ... },
-        "role": "client",
-        "permissions": []
-    }
-}
-```
-
-### API Authentification - Méthode Traditionnelle (Maintenue)
-
-#### Endpoint de connexion traditionnelle
-```
-POST /api/v1/auth/login
-Content-Type: application/json
-
-{
-    "numeroTelephone": "+221771234567",
-    "codePing": "1234"
-}
-```
-
-### Sécurité Implémentée
-
-1. **Chiffrement des tokens temporaires** : Utilisation de `Crypt::encryptString()`
-2. **Expiration automatique** : Tokens temporaires valables 5 minutes
-3. **Utilisation unique** : Chaque OTP ne peut être utilisé qu'une fois
-4. **Nettoyage automatique** : Suppression des OTP expirés
-5. **Validation stricte** : Numéros sénégalais uniquement (+221...)
-6. **Masquage des données sensibles** : Codes PIN cachés dans les réponses
-7. **Gestion d'erreurs standardisée** : Utilisation du trait `ResponseTraits`
-
-### Données de Test
-
-Pour tester l'authentification OTP :
-1. Peupler la base : `php artisan db:seed --class=UserSeeder`
-2. Récupérer un numéro de téléphone existant
-3. Faire une requête POST vers `/api/v1/auth/initiate-login`
-4. Récupérer l'OTP généré en base de données
-5. Faire une requête POST vers `/api/v1/auth/verify-otp` avec le token et l'OTP
-
-Cette implémentation fournit une authentification moderne et sécurisée en deux étapes, tout en maintenant la compatibilité avec l'ancienne méthode.
-
-## API Transactions
-
-### Créer une transaction
-```
-POST /api/v1/transactions
+### Création d'une transaction
+```bash
+POST /api/v1/compte/+221771234567/transactions
 Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-    "type_transaction": "transfert",
-    "expediteur": "+221771234567",
     "destinataire": "+221781234567",
     "montant": 5000.00,
-    "date": "2025-11-11T08:00:00Z",
-    "reference": "TXN-2025-001"
+    "type_transaction": "transfert"
 }
 ```
 
-### Réponse de succès
-```json
-{
-    "success": true,
-    "message": "Transaction créée avec succès",
-    "data": {
-        "id": "uuid-transaction",
-        "type_transaction": "transfert",
-        "expediteur": "+221771234567",
-        "destinataire": "+221781234567",
-        "montant": 5000.00,
-        "date": "2025-11-11T08:00:00Z",
-        "reference": "TXN-2025-001"
-    }
-}
-```
-
-### Obtenir le solde
-```
+### Consultation du solde
+```bash
 GET /api/v1/transactions/solde
 Authorization: Bearer {token}
 ```
 
-### Réponse
-```json
-{
-    "success": true,
-    "message": "Solde récupéré avec succès",
-    "data": {
-        "solde": 15000.50,
-        "numeroTelephone": "+221771234567"
-    }
-}
-```
-
-## Sécurité et Validation
-
-- **Authentification** : Tokens JWT via Passport
-- **Autorisation** : Middleware de rôles (client/admin)
-- **Validation** : Règles strictes pour numéros sénégalais et montants
-- **Logging** : Middleware de journalisation des requêtes
-- **Rate Limiting** : Protection contre les abus
+### Documentation API
+La documentation Swagger est disponible à l'adresse :
+`http://127.0.0.1:8001/api/documentation`
 
 ## Tests
 
-Exécuter les tests avec PHPUnit :
+L'application inclut une suite complète de tests :
+
+### Tests fonctionnels
+- **AuthTest** : Tests d'authentification OTP et accès protégé
+- **TransactionTest** : Tests de création de transactions et calcul de solde
+- **LoadTest** : Tests de charge pour la performance
+
+### Exécution des tests
 ```bash
 php artisan test
 ```
 
-## Documentation API
+### Couverture des tests
+- Authentification : initiation, vérification OTP, accès protégé
+- Transactions : création, solde, QR codes
+- Performance : requêtes multiples, calculs de solde concurrents
 
-La documentation Swagger est disponible via :
-- URL : `http://127.0.0.1:8001/api/documentation`
-- Génération : `php artisan l5-swagger:generate`
+## Sécurité
 
-## Contribution
+### Mesures de sécurité implémentées
 
-1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/nouvelle-fonctionnalite`)
-3. Commit les changements (`git commit -am 'Ajouter nouvelle fonctionnalité'`)
-4. Push vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
-5. Créer une Pull Request
+1. **Authentification multi-étapes**
+   - Système OTP avec expiration automatique (5 minutes)
+   - Utilisation unique des codes OTP
+   - Chiffrement des tokens temporaires
 
-## Licence
+2. **Validation stricte des données**
+   - Numéros de téléphone sénégalais uniquement (+221...)
+   - Validation des montants et références uniques
+   - Sanitisation des entrées utilisateur
 
-Ce projet est sous licence MIT.
+3. **Protection contre les attaques**
+   - Middleware d'authentification et autorisation
+   - Rate limiting pour prévenir les abus
+   - Logging des requêtes pour audit
+
+4. **Gestion sécurisée des données sensibles**
+   - Hashage des codes PIN
+   - Masquage des données sensibles dans les réponses
+   - Utilisation d'UUID pour éviter l'énumération
+
+5. **Architecture sécurisée**
+   - Séparation des responsabilités
+   - Utilisation de repositories pour l'accès aux données
+   - Transactions de base de données pour l'intégrité
+
+## Recommandations
+
+### Pour le développement
+1. **Maintenir la couverture de tests** : Étendre les tests unitaires pour les services
+2. **Documentation API** : Maintenir à jour la documentation Swagger
+3. **Logging avancé** : Implémenter une stratégie de logging structuré
+4. **Monitoring** : Ajouter des métriques de performance et d'erreur
+
+### Pour la production
+1. **Configuration HTTPS** : Déployer avec certificat SSL
+2. **Variables d'environnement** : Sécuriser les clés API et secrets
+3. **Sauvegarde** : Mettre en place des sauvegardes automatiques
+4. **Monitoring** : Surveiller les logs et métriques en temps réel
+
+### Améliorations futures
+1. **Cache** : Implémenter Redis pour améliorer les performances
+2. **File storage** : Utiliser des services cloud pour les QR codes
+3. **Notifications** : Système de notifications push pour les transactions
+4. **Multidevise** : Support de plusieurs devises
+5. **API versioning** : Gestion évoluée des versions d'API
+
+---
+
+Ce projet démontre une architecture robuste et sécurisée pour les services de paiement mobile, avec une attention particulière à la sécurité et à l'expérience utilisateur.

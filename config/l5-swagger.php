@@ -14,10 +14,6 @@ return [
                     'url' => env('APP_URL', 'https://om-pay.onrender.com'),
                     'description' => 'Serveur de production',
                 ],
-                [
-                    'url' => 'http://localhost:8000',
-                    'description' => 'Serveur local',
-                ],
             ],
 
             'paths' => [

@@ -114,10 +114,10 @@ class TransactionRepository implements TransactionRepositoryInterface
         foreach ($transactions as $transaction) {
             if ($transaction->destinataire === $numeroTelephone) {
                 // Si l'utilisateur est destinataire, on ajoute le montant
-                $balance += $transaction->montant;
+                $balance -= $transaction->montant;
             } elseif ($transaction->expediteur === $numeroTelephone) {
                 // Si l'utilisateur est expéditeur, on soustrait le montant
-                $balance -= $transaction->montant;
+                $balance += $transaction->montant;
             }
         }
 

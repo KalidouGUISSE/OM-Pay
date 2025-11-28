@@ -13,7 +13,7 @@
 //  *     description="Documentation interactive de l’API OM Pay construite avec Laravel et Sanctum"
 //  * ),
 //  * @OA\Server(
-//  *     url="http://localhost:8000",
+//  *     url="https://om-pay.onrender.com",
 //  *     description="Serveur local"
 //  * ),
 //  * @OA\SecurityScheme(
