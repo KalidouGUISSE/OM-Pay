@@ -21,7 +21,7 @@ class AuthSwagger
      *         required=true,
      *         @OA\JsonContent(
      *             required={"numeroTelephone"},
-     *             @OA\Property(property="numeroTelephone", type="string", example="+221818930119", description="Numéro de téléphone sénégalais valide")
+     *             @OA\Property(property="numeroTelephone", type="string", example="+221784458786", description="Numéro de téléphone sénégalais valide")
      *         )
      *     ),
      *     @OA\Response(

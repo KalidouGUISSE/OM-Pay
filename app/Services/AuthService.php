@@ -63,8 +63,22 @@ class AuthService
     public function verifyOtp(string $tempToken, string $otpCode)
     {
         try {
+            // Log de débogage pour la config
+            \Log::info('Config app pour débogage', [
+                'key_length' => strlen(config('app.key')),
+                'cipher' => config('app.cipher'),
+                'env' => config('app.env'),
+                'token_length' => strlen($tempToken)
+            ]);
+
             // Décrypter le token temporaire
-            $tempData = json_decode(Crypt::decryptString($tempToken), true);
+            try {
+                $tempData = json_decode(Crypt::decryptString($tempToken), true);
+                \Log::info('Déchiffrement réussi', ['tempData_keys' => array_keys($tempData ?? [])]);
+            } catch (\Exception $e) {
+                \Log::error('Erreur déchiffrement', ['error' => $e->getMessage(), 'token' => $tempToken]);
+                throw new AuthenticationException('Token temporaire invalide');
+            }
 
             if (!$tempData || !isset($tempData['numero_telephone']) || !isset($tempData['otp_id'])) {
                 \Log::error('Token temporaire invalide', ['tempData' => $tempData]);
