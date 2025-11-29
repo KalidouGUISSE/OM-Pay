@@ -150,7 +150,7 @@ class AuthService
             ];
 
         } catch (\Exception $e) {
-            throw new AuthenticationException('Erreur lors de la vérification OTP');
+            throw new AuthenticationException($e->getMessage());
         }
     }
 
