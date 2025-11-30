@@ -7,6 +7,7 @@ use App\Services\SmsService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class AuthService
@@ -64,7 +65,7 @@ class AuthService
     {
         try {
             // Log de débogage pour la config
-            \Log::info('Config app pour débogage', [
+            Log::info('Config app pour débogage', [
                 'key_length' => strlen(config('app.key')),
                 'cipher' => config('app.cipher'),
                 'env' => config('app.env'),
@@ -74,26 +75,26 @@ class AuthService
             // Décrypter le token temporaire
             try {
                 $tempData = json_decode(Crypt::decryptString($tempToken), true);
-                \Log::info('Déchiffrement réussi', ['tempData_keys' => array_keys($tempData ?? [])]);
+                Log::info('Déchiffrement réussi', ['tempData_keys' => array_keys($tempData ?? [])]);
             } catch (\Exception $e) {
-                \Log::error('Erreur déchiffrement', ['error' => $e->getMessage(), 'token' => $tempToken]);
+                Log::error('Erreur déchiffrement', ['error' => $e->getMessage(), 'token' => $tempToken]);
                 throw new AuthenticationException('Token temporaire invalide');
             }
 
             if (!$tempData || !isset($tempData['numero_telephone']) || !isset($tempData['otp_id'])) {
-                \Log::error('Token temporaire invalide', ['tempData' => $tempData]);
+                Log::error('Token temporaire invalide', ['tempData' => $tempData]);
                 throw new AuthenticationException('Token temporaire invalide');
             }
 
             // Vérifier l'expiration du token temporaire
             if (Carbon::parse($tempData['expires_at'])->isPast()) {
-                \Log::error('Token temporaire expiré', ['expires_at' => $tempData['expires_at']]);
+                Log::error('Token temporaire expiré', ['expires_at' => $tempData['expires_at']]);
                 throw new AuthenticationException('Token temporaire expiré');
             }
 
             $numeroTelephone = $tempData['numero_telephone'];
             $otpId = $tempData['otp_id'];
-            \Log::info('Vérification OTP', [
+            Log::info('Vérification OTP', [
                 'numero_telephone' => $numeroTelephone,
                 'otp_id' => $otpId,
                 'otp_code' => $otpCode
@@ -105,16 +106,16 @@ class AuthService
                 ->where('used', false)
                 ->where('expires_at', '>', Carbon::now())
                 ->first();
-
-            \Log::info('OTP trouvé', [
-                'otp_exists' => $otp ? true : false,
-                'otp_code_stored' => $otp ? $otp->otp_code : null,
-                'otp_used' => $otp ? $otp->used : null,
-                'otp_expires_at' => $otp ? $otp->expires_at : null
-            ]);
+    
+                Log::info('OTP trouvé', [
+                    'otp_exists' => $otp ? true : false,
+                    'otp_code_stored' => $otp ? $otp->otp_code : null,
+                    'otp_used' => $otp ? $otp->used : null,
+                    'otp_expires_at' => $otp ? $otp->expires_at : null
+                ]);
 
             if (!$otp || !$otp->isValid($otpCode)) {
-                \Log::error('OTP invalide', [
+                Log::error('OTP invalide', [
                     'otp_exists' => $otp ? true : false,
                     'is_valid' => $otp ? $otp->isValid($otpCode) : false
                 ]);
@@ -123,18 +124,18 @@ class AuthService
 
             // Marquer l'OTP comme utilisé
             $otp->markAsUsed();
-            \Log::info('OTP marqué comme utilisé', ['otp_id' => $otp->id]);
+            Log::info('OTP marqué comme utilisé', ['otp_id' => $otp->id]);
 
             // Récupérer le compte et procéder à l'authentification complète
             $compte = $this->compteRepo->findByNumeroTelephone($numeroTelephone);
-            \Log::info('Compte trouvé', ['compte_exists' => $compte ? true : false, 'numero' => $numeroTelephone]);
+            Log::info('Compte trouvé', ['compte_exists' => $compte ? true : false, 'numero' => $numeroTelephone]);
 
             if (!$compte || $compte->statut !== 'actif') {
-                \Log::error('Compte invalide', ['compte' => $compte, 'statut' => $compte ? $compte->statut : null]);
+                Log::error('Compte invalide', ['compte' => $compte, 'statut' => $compte ? $compte->statut : null]);
                 throw new AuthenticationException('Compte non trouvé ou inactif');
             }
 
-            \Log::info('Création des tokens', ['compte_id' => $compte->id, 'user_exists' => $compte->user ? true : false, 'user_id' => $compte->user ? $compte->user->id : null]);
+            Log::info('Création des tokens', ['compte_id' => $compte->id, 'user_exists' => $compte->user ? true : false, 'user_id' => $compte->user ? $compte->user->id : null]);
 
             try {
                 // Créer un token d'accès avec Passport
@@ -145,14 +146,14 @@ class AuthService
                 $refreshTokenObj = $compte->user->createToken('Refresh Token');
                 $refreshToken = $refreshTokenObj->accessToken;
 
-                \Log::info('Tokens créés avec succès', [
+                Log::info('Tokens créés avec succès', [
                     'access_token_length' => strlen($token),
                     'refresh_token_length' => strlen($refreshToken),
                     'access_token_id' => $accessToken->token->id,
                     'refresh_token_id' => $refreshTokenObj->token->id
                 ]);
             } catch (\Exception $e) {
-                \Log::error('Erreur création tokens', ['error' => $e->getMessage()]);
+                Log::error('Erreur création tokens', ['error' => $e->getMessage()]);
                 throw $e;
             }
 
