@@ -13,6 +13,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use App\Models\Compte;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use App\Traits\ResponseTraits;
 
 class AuthController extends Controller
@@ -32,20 +33,20 @@ class AuthController extends Controller
      */
     public function initiateLogin(InitiateLoginRequest $request)
     {
-        \Log::info('Début initiation login', ['numero' => $request->numeroTelephone]);
+        Log::info('Début initiation login', ['numero' => $request->numeroTelephone]);
 
         try {
             $result = $this->authService->initiateLogin($request->numeroTelephone);
-            \Log::info('Initiation login réussie', ['numero' => $request->numeroTelephone]);
+            Log::info('Initiation login réussie', ['numero' => $request->numeroTelephone]);
             return $this->successResponse('OTP envoyé avec succès', $result);
         } catch (AuthenticationException $e) {
-            \Log::error('Échec initiation login - AuthenticationException', [
+            Log::error('Échec initiation login - AuthenticationException', [
                 'numero' => $request->numeroTelephone,
                 'message' => $e->getMessage()
             ]);
             return $this->errorResponse($e->getMessage(), 'auth_failed', 401);
         } catch (\Exception $e) {
-            \Log::error('Échec initiation login - Exception générale', [
+            Log::error('Échec initiation login - Exception générale', [
                 'numero' => $request->numeroTelephone,
                 'message' => $e->getMessage()
             ]);
@@ -58,7 +59,7 @@ class AuthController extends Controller
      */
     public function verifyOtp(VerifyOtpRequest $request)
     {
-        \Log::info('Début vérification OTP', [
+        Log::info('Début vérification OTP', [
             'token_provided' => !empty($request->token),
             'otp_provided' => !empty($request->otp),
             'token_length' => strlen($request->token ?? ''),
@@ -67,17 +68,17 @@ class AuthController extends Controller
 
         try {
             $tokenData = $this->authService->verifyOtp($request->token, $request->otp);
-            \Log::info('Vérification OTP réussie');
+            Log::info('Vérification OTP réussie');
             return $this->successResponse('Authentification réussie', $tokenData);
         } catch (AuthenticationException $e) {
-            \Log::error('Échec vérification OTP - AuthenticationException', [
+            Log::error('Échec vérification OTP - AuthenticationException', [
                 'message' => $e->getMessage(),
                 'token' => $request->token,
                 'otp' => $request->otp
             ]);
             return $this->errorResponse($e->getMessage(), 'otp_invalid', 401);
         } catch (\Exception $e) {
-            \Log::error('Échec vérification OTP - Exception générale', [
+            Log::error('Échec vérification OTP - Exception générale', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

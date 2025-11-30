@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class OtpVerification extends Model
@@ -59,7 +60,7 @@ class OtpVerification extends Model
 
         $result = $isNotUsed && $codeMatches && $notExpired;
 
-        \Log::info('Vérification isValid', [
+        Log::info('Vérification isValid', [
             'id' => $this->id,
             'used' => $this->used,
             'isNotUsed' => $isNotUsed,

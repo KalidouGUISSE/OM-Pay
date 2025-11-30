@@ -41,9 +41,6 @@ php artisan route:clear || true
 php artisan config:clear || true
 php artisan cache:clear || true
 
-php artisan passport:install
-
-
 # Run migrations (non-blocking failure allowed)
 php artisan migrate --force || true
 
