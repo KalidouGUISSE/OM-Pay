@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Swagger;
 
-
 /**
  * @OA\Info(
  *     title="API OM Pay",
