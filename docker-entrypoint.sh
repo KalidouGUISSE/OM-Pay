@@ -44,5 +44,8 @@ php artisan cache:clear || true
 # Run migrations (non-blocking failure allowed)
 php artisan migrate --force || true
 
+# Install Passport keys and clients
+php artisan passport:install --force || true
+
 echo "Starting Laravel application..."
 exec "$@"

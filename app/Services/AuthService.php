@@ -138,6 +138,7 @@ class AuthService
             Log::info('Création des tokens', ['compte_id' => $compte->id, 'user_exists' => $compte->user ? true : false, 'user_id' => $compte->user ? $compte->user->id : null]);
 
             try {
+                Log::info('Début création tokens', ['user_id' => $compte->user->id]);
                 // Créer un token d'accès avec Passport
                 $accessToken = $compte->user->createToken('Personal Access Token');
                 $token = $accessToken->accessToken;
@@ -153,7 +154,11 @@ class AuthService
                     'refresh_token_id' => $refreshTokenObj->token->id
                 ]);
             } catch (\Exception $e) {
-                Log::error('Erreur création tokens', ['error' => $e->getMessage()]);
+                Log::error('Erreur création tokens', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $compte->user->id,
+                    'trace' => $e->getTraceAsString()
+                ]);
                 throw $e;
             }
 
