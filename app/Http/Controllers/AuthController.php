@@ -32,12 +32,23 @@ class AuthController extends Controller
      */
     public function initiateLogin(InitiateLoginRequest $request)
     {
+        \Log::info('Début initiation login', ['numero' => $request->numeroTelephone]);
+
         try {
             $result = $this->authService->initiateLogin($request->numeroTelephone);
+            \Log::info('Initiation login réussie', ['numero' => $request->numeroTelephone]);
             return $this->successResponse('OTP envoyé avec succès', $result);
         } catch (AuthenticationException $e) {
+            \Log::error('Échec initiation login - AuthenticationException', [
+                'numero' => $request->numeroTelephone,
+                'message' => $e->getMessage()
+            ]);
             return $this->errorResponse($e->getMessage(), 'auth_failed', 401);
         } catch (\Exception $e) {
+            \Log::error('Échec initiation login - Exception générale', [
+                'numero' => $request->numeroTelephone,
+                'message' => $e->getMessage()
+            ]);
             return $this->errorResponse($e->getMessage(), 'account_inactive', 403);
         }
     }
@@ -47,12 +58,29 @@ class AuthController extends Controller
      */
     public function verifyOtp(VerifyOtpRequest $request)
     {
+        \Log::info('Début vérification OTP', [
+            'token_provided' => !empty($request->token),
+            'otp_provided' => !empty($request->otp),
+            'token_length' => strlen($request->token ?? ''),
+            'otp_length' => strlen($request->otp ?? '')
+        ]);
+
         try {
             $tokenData = $this->authService->verifyOtp($request->token, $request->otp);
+            \Log::info('Vérification OTP réussie');
             return $this->successResponse('Authentification réussie', $tokenData);
         } catch (AuthenticationException $e) {
+            \Log::error('Échec vérification OTP - AuthenticationException', [
+                'message' => $e->getMessage(),
+                'token' => $request->token,
+                'otp' => $request->otp
+            ]);
             return $this->errorResponse($e->getMessage(), 'otp_invalid', 401);
         } catch (\Exception $e) {
+            \Log::error('Échec vérification OTP - Exception générale', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return $this->errorResponse('Erreur lors de la vérification', 'verification_error', 500);
         }
     }
