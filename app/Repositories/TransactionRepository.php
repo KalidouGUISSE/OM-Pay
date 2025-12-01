@@ -112,12 +112,27 @@ class TransactionRepository implements TransactionRepositoryInterface
         $balance = 0.0;
 
         foreach ($transactions as $transaction) {
-            if ($transaction->destinataire === $numeroTelephone) {
-                // Si l'utilisateur est destinataire, on ajoute le montant
-                $balance -= $transaction->montant;
-            } elseif ($transaction->expediteur === $numeroTelephone) {
-                // Si l'utilisateur est expéditeur, on soustrait le montant
-                $balance += $transaction->montant;
+            $type = strtolower($transaction->type_transaction);
+
+            if (str_contains($type, 'dépôt')) {
+                // Dépôt d'argent : toujours un crédit pour le destinataire
+                if ($transaction->destinataire === $numeroTelephone) {
+                    $balance += $transaction->montant;
+                }
+            } elseif (str_contains($type, 'retrait')) {
+                // Retrait d'argent : toujours un débit pour l'expéditeur
+                if ($transaction->expediteur === $numeroTelephone) {
+                    $balance -= $transaction->montant;
+                }
+            } else {
+                // Transferts, paiements, etc. : logique basée sur expéditeur/destinataire
+                if ($transaction->destinataire === $numeroTelephone) {
+                    // Réception : crédit
+                    $balance += $transaction->montant;
+                } elseif ($transaction->expediteur === $numeroTelephone) {
+                    // Envoi : débit
+                    $balance -= $transaction->montant;
+                }
             }
         }
 

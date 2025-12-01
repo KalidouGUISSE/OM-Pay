@@ -10,7 +10,7 @@ namespace App\Http\Controllers\Swagger;
  * )
  *
  * @OA\Server(
- *     url="https://om-pay.onrender.com",
+ *     url=L5_SWAGGER_CONST_HOST,
  *     description="Serveur dynamique (local ou production)"
  * )
  *
