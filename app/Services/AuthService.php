@@ -137,6 +137,10 @@ class AuthService
 
             Log::info('Création des tokens', ['compte_id' => $compte->id, 'user_exists' => $compte->user ? true : false, 'user_id' => $compte->user ? $compte->user->id : null]);
 
+            // Vérifier si le client Passport existe
+            $personalAccessClient = \Laravel\Passport\Client::where('personal_access_client', true)->first();
+            \Log::info('Client Passport Personal Access', ['client_exists' => $personalAccessClient ? true : false, 'client_id' => $personalAccessClient ? $personalAccessClient->id : null]);
+
             try {
                 Log::info('Début création tokens', ['user_id' => $compte->user->id]);
                 // Créer un token d'accès avec Passport
