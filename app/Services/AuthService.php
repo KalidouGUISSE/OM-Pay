@@ -137,9 +137,23 @@ class AuthService
 
             Log::info('Création des tokens', ['compte_id' => $compte->id, 'user_exists' => $compte->user ? true : false, 'user_id' => $compte->user ? $compte->user->id : null]);
 
-            // Vérifier si le client Passport existe
+            // Vérifier si le client Passport existe, sinon le créer
             $personalAccessClient = \Laravel\Passport\Client::where('personal_access_client', true)->first();
-            \Log::info('Client Passport Personal Access', ['client_exists' => $personalAccessClient ? true : false, 'client_id' => $personalAccessClient ? $personalAccessClient->id : null]);
+
+            if (!$personalAccessClient) {
+                Log::info('Création du client Passport Personal Access manquant');
+                $personalAccessClient = \Laravel\Passport\Client::create([
+                    'name' => 'OM Pay Personal Access Client',
+                    'secret' => 'j53MIggdnwhdb7nlgH1LIV9N9sI98FKtTQkLA5DW',
+                    'redirect' => 'http://localhost',
+                    'personal_access_client' => true,
+                    'password_client' => false,
+                    'revoked' => false,
+                ]);
+                Log::info('Client Passport Personal Access créé', ['client_id' => $personalAccessClient->id]);
+            } else {
+                Log::info('Client Passport Personal Access trouvé', ['client_id' => $personalAccessClient->id]);
+            }
 
             try {
                 Log::info('Début création tokens', ['user_id' => $compte->user->id]);

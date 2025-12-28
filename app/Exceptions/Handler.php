@@ -56,36 +56,46 @@ class Handler extends ExceptionHandler
     {
         $message = strtolower($exception->getMessage());
 
+        // Messages spécifiques pour Railway PostgreSQL
         if (str_contains($message, 'could not connect to server')) {
-            return 'Impossible de se connecter au serveur de base de données. Vérifiez la configuration réseau.';
+            return '👉 Ton application locale essaie de se connecter à la base PostgreSQL Railway mais la connexion échoue. Vérifiez la configuration réseau et les identifiants.';
         }
 
         if (str_contains($message, 'connection refused')) {
-            return 'Connexion refusée par le serveur de base de données. Vérifiez que le serveur est en cours d\'exécution.';
+            return '👉 La connexion à la base PostgreSQL Railway est refusée. Vérifiez que le serveur Railway est accessible et en cours d\'exécution.';
         }
 
         if (str_contains($message, 'authentication failed') || str_contains($message, 'password authentication failed')) {
-            return 'Échec de l\'authentification à la base de données. Vérifiez les identifiants de connexion.';
+            return '👉 Échec de l\'authentification à la base PostgreSQL Railway. Vérifiez les identifiants DATABASE_URL dans votre fichier .env.';
         }
 
         if (str_contains($message, 'database') && str_contains($message, 'does not exist')) {
-            return 'La base de données spécifiée n\'existe pas. Vérifiez le nom de la base de données.';
+            return '👉 La base de données PostgreSQL Railway n\'est pas accessible ou n\'existe pas. Vérifiez la configuration Railway.';
         }
 
         if (str_contains($message, 'connection timed out') || str_contains($message, 'timeout')) {
-            return 'Délai d\'attente de connexion dépassé. Vérifiez la connectivité réseau.';
+            return '👉 Timeout lors de la connexion à la base PostgreSQL Railway. Vérifiez votre connexion internet et la disponibilité du service Railway.';
         }
 
         if (str_contains($message, 'host') && str_contains($message, 'not found')) {
-            return 'Hôte de base de données introuvable. Vérifiez l\'adresse du serveur.';
+            return '👉 Hôte PostgreSQL Railway introuvable. Vérifiez l\'URL de connexion dans DATABASE_URL.';
         }
 
         if (str_contains($message, 'no route to host')) {
-            return 'Aucune route vers l\'hôte. Vérifiez la configuration réseau.';
+            return '👉 Aucune route vers l\'hôte Railway. Vérifiez votre connexion réseau et les paramètres de sécurité Railway.';
         }
 
         if (str_contains($message, 'permission denied')) {
-            return 'Permission refusée pour accéder à la base de données. Vérifiez les droits d\'accès.';
+            return '👉 Permission refusée pour accéder à la base PostgreSQL Railway. Vérifiez les droits d\'accès et la configuration Railway.';
+        }
+
+        // Messages génériques pour autres erreurs PostgreSQL
+        if (str_contains($message, 'ssl connection')) {
+            return '👉 Problème de connexion SSL à la base PostgreSQL Railway. Vérifiez la configuration SSL.';
+        }
+
+        if (str_contains($message, 'server closed the connection')) {
+            return '👉 Le serveur PostgreSQL Railway a fermé la connexion. Vérifiez la stabilité du service Railway.';
         }
 
         // Pour les autres erreurs, retourner null pour utiliser le message par défaut
