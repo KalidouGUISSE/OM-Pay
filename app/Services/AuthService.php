@@ -135,49 +135,29 @@ class AuthService
                 throw new AuthenticationException('Compte non trouvé ou inactif');
             }
 
-            Log::info('Création des tokens', ['compte_id' => $compte->id, 'user_exists' => $compte->user ? true : false, 'user_id' => $compte->user ? $compte->user->id : null]);
-
-            // Vérifier si le client Passport existe, sinon le créer
-            $personalAccessClient = \Laravel\Passport\Client::where('personal_access_client', true)->first();
-
-            if (!$personalAccessClient) {
-                Log::info('Création du client Passport Personal Access manquant');
-                $personalAccessClient = \Laravel\Passport\Client::create([
-                    'name' => 'OM Pay Personal Access Client',
-                    'secret' => 'j53MIggdnwhdb7nlgH1LIV9N9sI98FKtTQkLA5DW',
-                    'redirect' => 'http://localhost',
-                    'personal_access_client' => true,
-                    'password_client' => false,
-                    'revoked' => false,
-                ]);
-                Log::info('Client Passport Personal Access créé', ['client_id' => $personalAccessClient->id]);
-            } else {
-                Log::info('Client Passport Personal Access trouvé', ['client_id' => $personalAccessClient->id]);
-            }
+            Log::info('Création des tokens Sanctum', ['compte_id' => $compte->id, 'user_exists' => $compte->user ? true : false, 'user_id' => $compte->user ? $compte->user->id : null]);
 
             try {
                 Log::info('Début création tokens', ['user_id' => $compte->user->id]);
-                // Créer un token d'accès avec Passport
+                // Créer un token d'accès avec Sanctum
                 $accessToken = $compte->user->createToken('Personal Access Token');
-                $token = $accessToken->accessToken;
+                $token = $accessToken->plainTextToken;
 
                 // Créer un refresh token séparé
                 $refreshTokenObj = $compte->user->createToken('Refresh Token');
-                $refreshToken = $refreshTokenObj->accessToken;
+                $refreshToken = $refreshTokenObj->plainTextToken;
 
-                Log::info('Tokens créés avec succès', [
+                Log::info('Tokens Sanctum créés avec succès', [
                     'access_token_length' => strlen($token),
-                    'refresh_token_length' => strlen($refreshToken),
-                    'access_token_id' => $accessToken->token->id,
-                    'refresh_token_id' => $refreshTokenObj->token->id
+                    'refresh_token_length' => strlen($refreshToken)
                 ]);
             } catch (\Exception $e) {
-                Log::error('Erreur création tokens', [
+                Log::error('Erreur création tokens Sanctum', [
                     'error' => $e->getMessage(),
                     'user_id' => $compte->user->id,
                     'trace' => $e->getTraceAsString()
                 ]);
-                throw $e;
+                throw new AuthenticationException('Erreur lors de la création des tokens d\'authentification');
             }
 
             return [
@@ -210,10 +190,8 @@ class AuthService
             throw new \Exception('Votre compte n\'est pas actif');
         }
 
-        $token = $compte->user->createToken('Personal Access Token', [
-            'compte_id:' . $compte->id,
-            'numero_telephone:' . $compte->numeroTelephone
-        ])->plainTextToken;
+        // Générer le token d'accès avec Sanctum
+        $token = $compte->user->createToken('Personal Access Token')->plainTextToken;
 
         return [
             'access_token' => $token,
@@ -232,6 +210,7 @@ class AuthService
         // Implémentez la récupération des permissions selon le rôle
         return [];
     }
+
 
     /**
      * Normalise le numéro de téléphone pour ajouter +221 si nécessaire

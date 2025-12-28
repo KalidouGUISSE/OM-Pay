@@ -31,20 +31,14 @@ class CompteService {
         $user = $request->user();
 
         if ($user->role === 'client') {
-            $token = $user->currentAccessToken();
-            $compteId = $this->extractCompteIdFromToken($token->abilities ?? []);
+            // Pour les clients, retourner tous leurs comptes
+            $comptes = $user->comptes;
 
-            if (!$compteId) {
-                return $this->errorResponse('ID du compte non trouvé dans le token', 'compte_id_missing', 400);
+            if ($comptes->isEmpty()) {
+                return $this->errorResponse('Aucun compte trouvé pour cet utilisateur', 'no_accounts_found', 404);
             }
 
-            $compte = $this->compteRepository->findById($compteId);
-
-            if (!$compte || $compte->id_client !== $user->id) {
-                return $this->errorResponse('Compte non trouvé ou accès non autorisé', 'compte_not_found', 404);
-            }
-
-            return $this->successResponse('Compte récupéré', [$compte]);
+            return $this->successResponse('Comptes récupérés', $comptes->toArray());
         }
 
         $comptes = $this->compteRepository->getAll();

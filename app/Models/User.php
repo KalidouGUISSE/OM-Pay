@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Str;
-use Laravel\Passport\HasApiTokens;
+use Laravel\Sanctum\HasApiTokens;
 use App\Models\Compte;
 
 class User extends Authenticatable

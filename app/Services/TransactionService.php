@@ -218,21 +218,15 @@ class TransactionService
     {
         $user = $request->user();
 
-        // Extraire le numéro de téléphone depuis les abilities du token
-        $numeroTelephone = null;
-        $token = $user->currentAccessToken();
-        if ($token) {
-            foreach ($token->abilities ?? [] as $ability) {
-                if (str_starts_with($ability, 'numero_telephone:')) {
-                    $numeroTelephone = str_replace('numero_telephone:', '', $ability);
-                    break;
-                }
-            }
+        // Récupérer tous les numéros de téléphone des comptes de l'utilisateur
+        $numerosTelephones = $user->comptes->pluck('numeroTelephone')->toArray();
+
+        if (empty($numerosTelephones)) {
+            return $this->errorResponse('Aucun compte trouvé pour cet utilisateur', 'no_accounts_found', Response::HTTP_BAD_REQUEST);
         }
 
-        if (!$numeroTelephone) {
-            return $this->errorResponse('Numéro de téléphone non trouvé dans le token', 'numero_telephone_missing', Response::HTTP_BAD_REQUEST);
-        }
+        // Utiliser le premier numéro de téléphone (les utilisateurs ont généralement un compte)
+        $numeroTelephone = $numerosTelephones[0];
 
         // Récupérer les paramètres de filtrage
         $filters = [
@@ -307,21 +301,15 @@ class TransactionService
     {
         $user = $request->user();
 
-        // Extraire le numéro de téléphone depuis les abilities du token
-        $numeroTelephone = null;
-        $token = $user->currentAccessToken();
-        if ($token) {
-            foreach ($token->abilities ?? [] as $ability) {
-                if (str_starts_with($ability, 'numero_telephone:')) {
-                    $numeroTelephone = str_replace('numero_telephone:', '', $ability);
-                    break;
-                }
-            }
+        // Récupérer tous les numéros de téléphone des comptes de l'utilisateur
+        $numerosTelephones = $user->comptes->pluck('numeroTelephone')->toArray();
+
+        if (empty($numerosTelephones)) {
+            return $this->errorResponse('Aucun compte trouvé pour cet utilisateur', 'no_accounts_found', Response::HTTP_BAD_REQUEST);
         }
 
-        if (!$numeroTelephone) {
-            return $this->errorResponse('Numéro de téléphone non trouvé dans le token', 'numero_telephone_missing', Response::HTTP_BAD_REQUEST);
-        }
+        // Utiliser le premier numéro de téléphone
+        $numeroTelephone = $numerosTelephones[0];
 
         $solde = $this->transactionRepository->calculateBalance($numeroTelephone);
 

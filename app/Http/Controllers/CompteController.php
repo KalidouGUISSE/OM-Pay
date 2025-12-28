@@ -39,7 +39,7 @@ class CompteController extends Controller
 
         $compte = Compte::find($id);
         if (!$compte) {
-            return $this->errorResponse("compte non trouve", 'compte nom trouver', Response::HTTP_NOT_FOUND);
+            return $this->errorResponse("Compte non trouvé", 'compte_not_found', Response::HTTP_NOT_FOUND);
         }
 
         // Si c'est un client, vérifier qu'il accède à son propre compte
@@ -47,6 +47,6 @@ class CompteController extends Controller
             return $this->errorResponse("Accès non autorisé à ce compte", 'unauthorized', Response::HTTP_FORBIDDEN);
         }
 
-        return $this->successResponse('compte recuperer', [$compte]);
+        return $this->successResponse('Compte récupéré', [$compte]);
     }
 }
