@@ -31,7 +31,7 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']); // Ancienne méthode maintenue
     Route::post('/refresh', [AuthController::class, 'refresh']);
 });
-Route::post('v1/comptes', [CompteController::class, 'store']); // Seulement admin peut créer
+Route::post('v1/comptes', [CompteController::class, 'store']);
 
 // Routes protégées
 Route::middleware(['auth:api', 'logging'])->group(function () {
