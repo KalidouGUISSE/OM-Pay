@@ -40,5 +40,5 @@ class CompteSwagger
      *     @OA\Response(response=401, description="Non autorisé")
      * )
      */
-    // public function index() {}
+    public function index() {}
 }

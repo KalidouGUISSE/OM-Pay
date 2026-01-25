@@ -404,6 +404,79 @@
                 ]
             }
         },
+        "/api/v1/comptes": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Lister les comptes selon le rôle",
+                "description": "Retourne le compte du client connecté ou tous les comptes si c’est un admin.",
+                "operationId": "0f411c0d5b7b7411686d68fbb813d286",
+                "responses": {
+                    "200": {
+                        "description": "Comptes récupérés",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "comptes recuperer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "example": "10e5ea70-d168-4d14-b6ef-eef90221e630"
+                                                    },
+                                                    "numeroCompte": {
+                                                        "type": "string",
+                                                        "example": "T3YK5AED7K"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "example": "marchand"
+                                                    },
+                                                    "statut": {
+                                                        "type": "string",
+                                                        "example": "actif"
+                                                    },
+                                                    "dateCreation": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "code_qr": {
+                                                        "description": "QR code en base64",
+                                                        "type": "string",
+                                                        "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/compte/{numero}/transactions": {
             "get": {
                 "tags": [
@@ -984,6 +1057,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Comptes",
+            "description": "Gestion des comptes"
+        },
         {
             "name": "Transactions",
             "description": "Gestion des transactions"
