@@ -8,6 +8,9 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Models\Compte;
 use App\Services\CompteService;
 use App\Http\Requests\CompteIndexRequest;
+use App\Http\Requests\CreateCompteRequest;
+use App\Http\Requests\AddCompteRequest;
+use App\Models\User;
 
 class CompteController extends Controller
 {
@@ -48,5 +51,39 @@ class CompteController extends Controller
         }
 
         return $this->successResponse('Compte récupéré', [$compte]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(CreateCompteRequest $request)
+    {
+        $data = $request->validated();
+        $result = $this->compteService->createCompte($data);
+
+        $message = $result['is_new_user']
+            ? 'Compte et utilisateur créés avec succès'
+            : 'Compte créé avec succès pour l\'utilisateur existant';
+
+        return $this->successResponse($message, [
+            'compte' => $result['compte'],
+            'user' => $result['user'],
+            'is_new_user' => $result['is_new_user']
+        ], Response::HTTP_CREATED);
+    }
+
+    /**
+     * Add an additional account for the authenticated user.
+     */
+    public function add(AddCompteRequest $request)
+    {
+        $user = $request->user();
+        $data = $request->validated();
+        $result = $this->compteService->addCompteForUser($data, $user);
+
+        return $this->successResponse('Compte supplémentaire créé avec succès', [
+            'compte' => $result['compte'],
+            'user' => $result['user'],
+        ], Response::HTTP_CREATED);
     }
 }

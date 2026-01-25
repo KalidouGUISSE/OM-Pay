@@ -31,6 +31,7 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']); // Ancienne méthode maintenue
     Route::post('/refresh', [AuthController::class, 'refresh']);
 });
+Route::post('v1/comptes', [CompteController::class, 'store']); // Seulement admin peut créer
 
 // Routes protégées
 Route::middleware(['auth:api', 'logging'])->group(function () {
@@ -41,6 +42,8 @@ Route::middleware(['auth:api', 'logging'])->group(function () {
 
     Route::prefix('v1')->group(function () {
         Route::get('/comptes', [CompteController::class, 'index'])->middleware('role:client,admin');
+        Route::post('/comptes/add', [CompteController::class, 'add'])->middleware('role:client,admin'); // Utilisateur authentifié peut ajouter un compte
+        // Route::post('/comptes', [CompteController::class, 'store'])->middleware('role:admin'); // Seulement admin peut créer
         Route::get('/comptes/{id}', [CompteController::class, 'show'])->middleware('role:client,admin');
         Route::get('/user', function (Request $request) {
             return $request->user();

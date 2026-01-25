@@ -27,7 +27,7 @@ class User extends Authenticatable
         });
     }
 
-    protected $fillable = ['id', 'nom', 'prenom', 'role'];
+    protected $fillable = ['id', 'nom', 'prenom', 'role', 'numero_carte_identite'];
 
     public function comptes()
     {
@@ -35,3 +35,4 @@ class User extends Authenticatable
     }
 
 }
+
