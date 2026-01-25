@@ -128,6 +128,16 @@ class TransactionService
                 'version' => 1
             ];
 
+            // Vérifier le solde de l'expéditeur avant la transaction
+            $soldeExpediteur = $this->transactionRepository->calculateBalance($data['expediteur']);
+            if ($soldeExpediteur < $data['montant']) {
+                return $this->errorResponse(
+                    'Solde insuffisant. Solde actuel: ' . number_format($soldeExpediteur, 2) . ' FCFA, Montant demandé: ' . number_format($data['montant'], 2) . ' FCFA',
+                    'insufficient_balance',
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
             DB::beginTransaction();
 
             $transaction = $this->transactionRepository->create($data);
@@ -323,6 +333,11 @@ class TransactionService
 
     public function getSoldeByNumero(string $numero)
     {
+        // Validation du numéro de téléphone sénégalais
+        if (!preg_match('/^\+221[0-9]{9}$/', $numero)) {
+            return $this->errorResponse('Numéro de téléphone invalide. Seuls les numéros sénégalais (+221...) sont acceptés.', 'invalid_phone_number', Response::HTTP_BAD_REQUEST);
+        }
+
         $solde = $this->transactionRepository->calculateBalance($numero);
 
         return $this->successResponse('Solde calculé avec succès', [

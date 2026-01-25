@@ -69,8 +69,8 @@ class UserSeeder extends Seeder
 
         // Créer des utilisateurs génériques supplémentaires si nécessaire
         User::factory()
-            ->count(5)
-            ->has(Compte::factory()->count(2), 'comptes')
+            ->count(2)
+            ->has(Compte::factory()->count(1), 'comptes')
             ->create();
     }
 }

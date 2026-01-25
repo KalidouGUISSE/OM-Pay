@@ -11,8 +11,11 @@ use App\Traits\ResponseTraits;
 use Exception;
 use App\Models\User;
 use App\Models\Compte;
+use App\Models\Transaction;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 class CompteService {
 
     // use ApiResponse;
@@ -203,6 +206,9 @@ class CompteService {
 
             $compte = Compte::create($compteData);
 
+            // Créer une transaction initiale de 100.000 FCFA
+            $this->createInitialTransaction($compte->numeroTelephone);
+
             return [
                 'compte' => $compte,
                 'user' => $user,
@@ -230,11 +236,35 @@ class CompteService {
                 'codePingPlain' => $data['codePing'] ?? null,
             ]);
 
+            // Créer une transaction initiale de 100.000 FCFA
+            $this->createInitialTransaction($compte->numeroTelephone);
+
             return [
                 'compte' => $compte,
                 'user' => $user,
             ];
         });
+    }
+
+    private function createInitialTransaction(string $numeroTelephone)
+    {
+        // Générer une référence unique
+        do {
+            $reference = 'PP' . date('ym') . '.' . date('Y') . '.INIT' . strtoupper(Str::random(3));
+        } while (Transaction::where('reference', $reference)->exists());
+
+        Transaction::create([
+            'type_transaction' => 'Dépôt initial',
+            'destinataire' => $numeroTelephone,
+            'expediteur' => 'SYSTEM',
+            'montant' => 100000.00,
+            'date' => Carbon::now(),
+            'reference' => $reference,
+            'metadata' => [
+                'type' => 'initial_deposit',
+                'description' => 'Solde initial du compte'
+            ]
+        ]);
     }
 
 }
