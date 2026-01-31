@@ -119,7 +119,7 @@ class CompteSwagger
      *     @OA\Response(response=422, description="Données invalides")
      * )
      */
-    public function add() {}
+    // public function add() {}
 
     /**
      * @OA\Get(
@@ -172,5 +172,5 @@ class CompteSwagger
      *     @OA\Response(response=401, description="Non autorisé")
      * )
      */
-    public function index() {}
+    // public function index() {}
 }
