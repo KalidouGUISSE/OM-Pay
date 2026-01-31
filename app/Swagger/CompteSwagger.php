@@ -65,7 +65,7 @@ class CompteSwagger
      *     @OA\Response(response=422, description="Données invalides")
      * )
      */
-    public function store() {}
+    // public function store() {}
 
     /**
      * @OA\Post(
@@ -172,5 +172,5 @@ class CompteSwagger
      *     @OA\Response(response=401, description="Non autorisé")
      * )
      */
-    // public function index() {}
+    public function index() {}
 }
