@@ -680,10 +680,13 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 | | |
 |---|---|
-| **Nom** | **Kalidou Guissé** |
-| **Rôle** | Développeur Backend PHP/Laravel |
+| **Nom** | Kalidou Guissé |
+| **Rôle** | Développeur Backend PHP/Laravel (Intégration API / Frontend Flutter) |
 | **GitHub** | [https://github.com/KalidouGUISSE](https://github.com/KalidouGUISSE) |
-| **Projet** | [https://github.com/KalidouGUISSE/OM-Pay](https://github.com/KalidouGUISSE/OM-Pay) |
+<!-- | **Projets** | [OM-Pay Backend](https://github.com/KalidouGUISSE/OM-Pay) • [OM-Pay Frontend Flutter](https://github.com/KalidouGUISSE/OM-Pay-Fluter) | -->
+| **Documentation API** | [Swagger UI](https://om-pay.onrender.com/api/documentation#/) |
+| **Portfolio** | [https://kalidou-guisse-porte-follio.vercel.app](https://kalidou-guisse-porte-follio.vercel.app) |
+
 
 ---
 
