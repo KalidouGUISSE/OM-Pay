@@ -2,11 +2,27 @@
 
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
 [![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Swagger](https://img.shields.io/badge/Swagger/OpenAPI-3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/)
 [![Sanctum](https://img.shields.io/badge/Sanctum-Auth-red?style=for-the-badge&logo=laravel)](https://laravel.com/docs/sanctum)
 
-> **SamaOMPay** est une API RESTful de gestion de paiements mobiles, conçue pour le marché sénégalais. Elle permet aux utilisateurs de gérer leurs comptes financiers, d'effectuer des transactions (dépôts, retraits, transferts) et de consulter leur historique en toute sécurité.
+> **SamaOMPay** est une API RESTful de gestion de paiements mobiles, conçue pour le marché sénégalais. Elle permet aux utilisateurs de gérer leurs comptes financiers Orange Money, d'effectuer des transactions (dépôts, retraits, transferts) et de consulter leur historique en toute sécurité.
+
+---
+
+## 📸 Aperçu de l'API
+
+### Documentation Swagger - Vue d'ensemble
+
+![Swagger Overview](app/screenshots/swagger-overview.png)
+
+### Documentation Swagger - Transactions
+
+![Swagger Transactions](app/screenshots/swagger-transaction.png)
+
+### Vérification OTP
+
+![Vérification OTP](app/screenshots/verifier-code-OTP.png)
 
 ---
 
@@ -50,7 +66,7 @@ Ce projet a été développé dans une démarche d'apprentissage approfondi de L
 |-------------|---------|------|---------------|
 | **PHP** | 8.2+ | Langage serveur | Typage statique, performance, typage nul |
 | **Laravel** | 11.x | Framework MVC | ORM Eloquent, migrations, routing elegant |
-| **MySQL** | 8.0+ | Base de données | Transactions ACID, indexes performants |
+| **PostgreSQL** | 16+ | Base de données | Performances cloud, extensions modernes, replication native |
 | **Laravel Sanctum** | 3.3+ | Authentification | Tokens légers pour API mobile |
 | **Laravel Passport** | 12.x | OAuth2 | Gestion avancée des tokens (optionnel) |
 | **Swagger/OpenAPI** | 3.0 | Documentation | Interface interactive, génération de code |
@@ -82,7 +98,7 @@ Ce projet a été développé dans une démarche d'apprentissage approfondi de L
 │  └── Models        : ORM Eloquent pour la DB              │        │
 │                                                         ▼        │
 │                                           ┌─────────────────┐   │
-│                                           │     MySQL       │   │
+│                                           │       neon      │   │
 │                                           └─────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -180,8 +196,8 @@ OM-Pay/
 
 - PHP 8.2 ou supérieur
 - Composer 2.x
-- MySQL 8.0+
-- Extension PHP PDO_MySQL
+- PostgreSQL 16+ (Neon ou local)
+- Extension PHP PDO_PGSQL
 - Git
 
 ### Installation locale
@@ -198,17 +214,16 @@ composer install
 cp .env.example .env
 php artisan key:generate
 
-# Configurer la base de données dans .env
-# DB_CONNECTION=mysql
-# DB_HOST=127.0.0.1
-# DB_PORT=3306
-# DB_DATABASE=om_pay
-# DB_USERNAME=root
-# DB_PASSWORD=
+# Configurer la base de données PostgreSQL Neon dans .env
+# DB_CONNECTION=pgsql
+# DB_HOST=ep-xxx.region.neon.tech
+# DB_PORT=5432
+# DB_DATABASE=neon_db
+# DB_USERNAME=username
+# DB_PASSWORD=password
+# DB_SCHEMA=public
 
-# Créer la base de données
-mysql -u root -p -e "CREATE DATABASE om_pay;"
-
+# Créer la base de données (géré par Neon)
 # Exécuter les migrations avec données de test
 php artisan migrate --seed
 
@@ -224,13 +239,14 @@ APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://localhost:8000
 
-# Base de données
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=om_pay
-DB_USERNAME=root
-DB_PASSWORD=
+# Base de données PostgreSQL Neon
+DB_CONNECTION=pgsql
+DB_HOST=ep-xxx.region.neon.tech
+DB_PORT=5432
+DB_DATABASE=neon_db
+DB_USERNAME=username
+DB_PASSWORD=password
+DB_SCHEMA=public
 
 # Sanctum (authentification)
 SANCTUM_STATEFUL_DOMAINS=localhost:3000
@@ -240,9 +256,6 @@ SESSION_DOMAIN=localhost
 TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
 TWILIO_PHONE_NUMBER=+221XXXXXXXXX
-
-# QR Code
-# Pas de configuration supplémentaire requise
 ```
 
 ### Docker (optionnel)
@@ -269,7 +282,7 @@ php artisan migrate --seed
 
 ### Accès à Swagger UI
 
-👉 **[Documentation Interactive - SamaOMPay](https://om-pay.onrender.com)**
+👉 **[Documentation Interactive - SamaOMPay](https://om-pay.onrender.com/api/documentation)**
 
 Swagger UI vous permet de :
 - Explorer toutes les routes disponibles
@@ -338,7 +351,6 @@ erDiagram
         string nom
         string prenom
         string email
-        string numeroTelephone
         string role
         string password_hash
     }
@@ -635,8 +647,8 @@ class TransactionService
 L'API est déployée sur **Render** avec une configuration automatique :
 
 - **URL de production** : https://om-pay.onrender.com
-- **Documentation** : https://om-pay.onrender.com/docs
-- **Base de données** : MySQL sur Render
+- **Documentation** : https://om-pay.onrender.com/api/documentation
+- **Base de données** : PostgreSQL sur Neon (serverless, auto-scaling)
 
 ### Commandes de déploiement
 
@@ -672,8 +684,6 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 | **Rôle** | Développeur Backend PHP/Laravel |
 | **GitHub** | [https://github.com/KalidouGUISSE](https://github.com/KalidouGUISSE) |
 | **Projet** | [https://github.com/KalidouGUISSE/OM-Pay](https://github.com/KalidouGUISSE/OM-Pay) |
-| **consommer par** | [https://github.com/KalidouGUISSE/OM-Pay-Fluter](https://github.com/KalidouGUISSE/OM-Pay-Fluter) |
-
 
 ---
 
