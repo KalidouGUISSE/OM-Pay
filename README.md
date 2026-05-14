@@ -6,7 +6,7 @@
 [![Swagger](https://img.shields.io/badge/Swagger/OpenAPI-3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/)
 [![Sanctum](https://img.shields.io/badge/Sanctum-Auth-red?style=for-the-badge&logo=laravel)](https://laravel.com/docs/sanctum)
 
-> **SamaOMPay** est une API RESTful de gestion de paiements mobiles, conçue pour le marché sénégalais. Elle permet aux utilisateurs de gérer leurs comptes financiers Orange Money, d'effectuer des transactions (dépôts, retraits, transferts) et de consulter leur historique en toute sécurité.
+> **SamaOMPay** est une API RESTful (système backend orienté données, conçu pour gérer des flux financiers structurés) de gestion de paiements mobiles, conçue pour le marché sénégalais. Elle permet aux utilisateurs de gérer leurs comptes financiers Orange Money, d'effectuer des transactions (dépôts, retraits, transferts) et de consulter leur historique en toute sécurité.
 
 ---
 
